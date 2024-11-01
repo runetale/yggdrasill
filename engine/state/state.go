@@ -3,6 +3,7 @@ package state
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/runetale/notch/engine/events"
 	"github.com/runetale/notch/engine/namespace"
@@ -14,12 +15,13 @@ import (
 type State struct {
 	Task      task.Tasklet
 	Storages  map[string]storage.Storage
-	Variables map[string]string // pre-define
+	Variables map[string]string // pre-define variables
 	// 各Namespaceを持った構造体
 	Namespaces []*namespace.Namespace
 	History    []*Execution // execed histories
 
-	sender   events.Channel
+	// sent to engine.consumeEvent
+	sender   chan<- events.Channel
 	complete bool
 }
 
@@ -54,7 +56,16 @@ func NewState(
 
 	// set variables
 	for _, o := range namespaces {
-		fmt.Println(o)
+		required := o.Action.RequiredVariables()
+		log.Printf("actions %s requires %v\n", o.Action.Name(), required)
+		for _, vn := range required {
+			exp := fmt.Sprintf("$%s", vn)
+			varname, value, err := task.ParseVariableExpr(exp)
+			if err != nil {
+				return nil
+			}
+			variables[varname] = value
+		}
 	}
 
 	// add task defined actions by yaml
@@ -67,5 +78,6 @@ func NewState(
 		Namespaces: namespaces,
 		Variables:  variables,
 		History:    history,
+		sender:     sender,
 	}
 }

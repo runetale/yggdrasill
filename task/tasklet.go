@@ -124,7 +124,7 @@ func getFromYamlFile(filePath string) (*Tasklet, error) {
 // Promptが設定されていない場合はuserからのpromptを設定する
 func (t *Tasklet) Setup(userPrompt *string) error {
 	if userPrompt == nil {
-		input := getUserInput("enter task > ")
+		input := t.GetUserInput("enter task > ")
 		t.Prompt = &input
 		return nil
 	}
@@ -149,8 +149,9 @@ func (t *Tasklet) GetFunctions() []Function {
 	return t.Functions
 }
 
-func getUserInput(prompt string) string {
+func (*Tasklet) GetUserInput(prompt string) string {
 	fmt.Print("\n" + prompt)
+	fmt.Print(prompt) // プロンプトを表示
 
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
@@ -158,4 +159,32 @@ func getUserInput(prompt string) string {
 
 	fmt.Println()
 	return strings.TrimSpace(input)
+}
+
+func (t *Tasklet) ParseVariableExpr(expr string) (string, string, error) {
+	if !strings.HasPrefix(expr, "$") {
+		return "", "", fmt.Errorf("'%s' is not a valid variable expression", expr)
+	}
+
+	varName := strings.TrimPrefix(expr, "$")
+	varDefault := ""
+	if strings.Contains(varName, "||") {
+		parts := strings.SplitN(varName, "||", 2)
+		varName = strings.TrimSpace(parts[0])
+		varDefault = strings.TrimSpace(parts[1])
+	}
+
+	// get from enviroment variables
+	if value, exists := os.LookupEnv(varName); exists {
+		return varName, value, nil
+	}
+
+	// if default value exists
+	if varDefault != "" {
+		return varName, varDefault, nil
+	}
+
+	// user input
+	userInput := t.GetUserInput(fmt.Sprintf("\nplease set $%s: ", varName))
+	return varName, userInput, nil
 }
