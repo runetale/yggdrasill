@@ -3,7 +3,7 @@ package action
 import (
 	"time"
 
-	"github.com/runetale/notch/engine/events"
+	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
 
@@ -12,8 +12,7 @@ type Action interface {
 	GetNamespace() types.NamespaceType
 	Name() string
 	Description() string
-	// todo: chanelでstorageなどを送る
-	Run(event events.Event, attributes map[string]string, payload string) string
+	Run(event storage.Storage, attributes map[string]string, payload string) string
 	Timeout() time.Duration
 	RequiredVariables() []string
 	RequiresUserConfirmation() bool

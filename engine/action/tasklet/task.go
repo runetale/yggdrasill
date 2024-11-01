@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/runetale/notch/engine/action"
-	"github.com/runetale/notch/engine/events"
+	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
 
@@ -34,7 +34,7 @@ func (s *Tasklet) Description() string {
 	return string(data)
 }
 
-func (s *Tasklet) Run(event events.Event, attributes map[string]string, payload string) string {
+func (s *Tasklet) Run(storage storage.Storage, attributes map[string]string, payload string) string {
 	return "run"
 }
 

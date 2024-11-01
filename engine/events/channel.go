@@ -18,6 +18,7 @@ const (
 	TaskComplete Event = ""
 )
 
+// TODO: Eventだけではなく、他の型も送るようにする
 type Channel struct {
 	Sender   chan<- Event
 	Receiver <-chan Event
