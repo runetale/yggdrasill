@@ -17,6 +17,7 @@ const (
 	RAG        NamespaceType = "rag"
 	PLANNING   NamespaceType = "planning"
 	TASK       NamespaceType = "task"
+	CUSTOM     NamespaceType = "custom"
 )
 
 func GetNameSpaceValues() []NamespaceType {
@@ -30,5 +31,6 @@ func GetNameSpaceValues() []NamespaceType {
 	ns = append(ns, RAG)
 	ns = append(ns, PLANNING)
 	ns = append(ns, TASK)
+	ns = append(ns, CUSTOM)
 	return ns
 }

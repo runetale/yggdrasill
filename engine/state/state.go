@@ -2,6 +2,8 @@
 package state
 
 import (
+	"fmt"
+
 	"github.com/runetale/notch/engine/events"
 	"github.com/runetale/notch/engine/namespace"
 	"github.com/runetale/notch/storage"
@@ -37,7 +39,7 @@ func NewState(
 		// creating default namespaces
 		ns := types.GetNameSpaceValues()
 		for _, o := range ns {
-			namespaces = append(namespaces, namespace.NewNamespace(o))
+			namespaces = append(namespaces, namespace.NewNamespace(o, nil))
 		}
 	} else {
 		// adding only task defined namespaces
@@ -46,14 +48,20 @@ func NewState(
 				*o = ""
 				continue
 			}
-			namespaces = append(namespaces, namespace.NewNamespace(types.NamespaceType(*o)))
+			namespaces = append(namespaces, namespace.NewNamespace(types.NamespaceType(*o), nil))
 		}
 	}
 
 	// set variables
-	// setされたすべてのnamespaceの値を呼び出す
 	for _, o := range namespaces {
+		fmt.Println(o)
 	}
+
+	// add task defined actions by yaml
+	functions := task.GetFunctions()
+	namespaces = append(namespaces, namespace.NewNamespace(types.CUSTOM, functions))
+
+	// create storages by namespaces
 
 	return &State{
 		Namespaces: namespaces,

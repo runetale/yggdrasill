@@ -4,13 +4,15 @@ import (
 	"os"
 	"time"
 
+	"github.com/runetale/notch/engine/action"
+	"github.com/runetale/notch/engine/events"
 	"github.com/runetale/notch/types"
 )
 
 type Shell struct {
 }
 
-func NewShell() *Shell {
+func NewShell() action.Action {
 	return &Shell{}
 }
 
@@ -24,9 +26,9 @@ func (s *Shell) Description() string {
 	return string(data)
 }
 
-// func (s *Shell) Run(state state.State, attributes map[string]string, payload string) string {
-// 	return "run"
-// }
+func (s *Shell) Run(event events.Event, attributes map[string]string, payload string) string {
+	return "run"
+}
 
 func (s *Shell) Timeout() time.Duration {
 	return time.Duration(0)

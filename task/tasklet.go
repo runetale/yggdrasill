@@ -51,10 +51,25 @@ type Task interface {
 type Tasklet struct {
 	Name         string
 	Folder       string
-	Using        []*string `yaml:"using"`
-	SystemPrompt string    `yaml:"system_prompt"`
-	Prompt       *string   `yaml:"prompt"`
-	Guidance     []string  `yaml:"guidance"`
+	Using        []*string  `yaml:"using"`
+	SystemPrompt string     `yaml:"system_prompt"`
+	Prompt       *string    `yaml:"prompt"`
+	Guidance     []string   `yaml:"guidance"`
+	Functions    []Function `yaml:"functions"`
+}
+
+type Function struct {
+	Name        string   `yaml:"name"`
+	Description string   `yaml:"description"`
+	Actions     []Action `yaml:"actions"`
+}
+
+type Action struct {
+	Name           string `yaml:"name"`
+	Description    string `yaml:"description"`
+	Tool           string `yaml:"tool"`
+	MaxShownOutput int    `yaml:"max_shown_output"`
+	ExamplePayload string `yaml:"example_payload,omitempty"`
 }
 
 func GetFromPath(path string) (*Tasklet, error) {
@@ -124,6 +139,14 @@ func (t *Tasklet) Setup(userPrompt *string) error {
 
 func (t *Tasklet) GetUsing() []*string {
 	return t.Using
+}
+
+// user defined yaml tasks
+func (t *Tasklet) GetFunctions() []Function {
+	fs := t.Functions
+	fmt.Println("Called GetFunctions")
+	fmt.Println(fs)
+	return t.Functions
 }
 
 func getUserInput(prompt string) string {

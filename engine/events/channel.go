@@ -18,7 +18,6 @@ const (
 	TaskComplete Event = ""
 )
 
-// TODO Eventごとのチャネルと関数を設定する
 type Channel struct {
 	Sender   chan<- Event
 	Receiver <-chan Event
