@@ -12,13 +12,49 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type Task interface {
+	// これらの関数を表示
+	// fn to_system_prompt(&self) -> Result<String>;
+	// fn to_prompt(&self) -> Result<String>;
+	// fn get_functions(&self) -> Vec<Namespace>;
+
+	// fn get_timeout(&self) -> Option<Duration> {
+	// 	None
+	// }
+
+	// fn get_rag_config(&self) -> Option<mini_rag::Configuration> {
+	// 	None
+	// }
+
+	// fn max_history_visibility(&self) -> u16 {
+	// 	50
+	// }
+
+	// fn guidance(&self) -> Result<Vec<String>> {
+	// 	self.base_guidance()
+	// }
+
+	// fn namespaces(&self) -> Option<Vec<String>> {
+	// 	None
+	// }
+
+	//	fn base_guidance(&self) -> Result<Vec<String>> {
+	//		// basic rules to extend
+	//		Ok(include_str!("basic_guidance.prompt")
+	//			.split('\n')
+	//			.map(|l| l.trim().to_string())
+	//			.filter(|l| !l.is_empty())
+	//			.collect())
+	//	}
+}
+
 type Tasklet struct {
 	Name         string
 	Folder       string
-	Using        []string `yaml:"using"`
-	SystemPrompt string   `yaml:"system_prompt"`
-	Prompt       *string  `yaml:"prompt"`
-	Guidance     []string `yaml:"guidance"`
+	Using        []*string `yaml:"using"`
+	SystemPrompt string    `yaml:"system_prompt"`
+	Prompt       *string   `yaml:"prompt"`
+	Guidance     []string  `yaml:"guidance"`
 }
 
 func GetFromPath(path string) (*Tasklet, error) {
@@ -85,6 +121,11 @@ func (t *Tasklet) Setup(userPrompt *string) error {
 
 	return errors.New("Setup failed")
 }
+
+func (t *Tasklet) GetUsing() []*string {
+	return t.Using
+}
+
 func getUserInput(prompt string) string {
 	fmt.Print("\n" + prompt)
 

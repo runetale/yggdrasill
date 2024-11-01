@@ -1,0 +1,17 @@
+{{.SystemPrompt}}
+            
+# Context
+
+{{.Storages}}
+
+{{.Iterations}}
+
+{{.AvailableActions}}
+
+---
+
+# Guidance
+
+{{.Guidance}}
+
+Output a new action in your response. Prior action results are displayed in the chat history.

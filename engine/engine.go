@@ -4,22 +4,15 @@ import (
 	"github.com/runetale/notch/engine/events"
 	"github.com/runetale/notch/engine/state"
 	"github.com/runetale/notch/llm"
+	"github.com/runetale/notch/task"
 )
 
-type Invocation struct {
-	Action     string
-	Attributes map[string]string
-	Payload    string
-}
-
-func NewInvocation() *Invocation {
-	return &Invocation{}
-}
-
 type Engine struct {
+	// stateの更新を行う
 	Channel *events.Channel
 	Client  llm.LLMClinet
 	State   state.State
+	Task    task.Tasklet
 
 	closeCh chan struct{}
 	waitCh  chan struct{}
@@ -61,7 +54,7 @@ func (e *Engine) consumeEvent() {
 
 func (e *Engine) Automaton() {
 	// chat historyを生成
-	e.prepareStep()
+	e.prepareAutomaton()
 
 	// チャネルに送信
 	// on_state_update
@@ -79,7 +72,11 @@ func (e *Engine) Automaton() {
 	e.closeCh <- struct{}{}
 }
 
-// chatOptionsを返す
-func (e *Engine) prepareStep() llm.ChatOption {
-	return *llm.NewChatOption()
+func (e *Engine) prepareAutomaton() llm.ChatOption {
+	// get system prompt by state
+
+	// get prompt by state
+
+	// get history by state
+	return *llm.NewChatOption("", "", []string{""})
 }

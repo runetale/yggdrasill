@@ -4,3 +4,6 @@
 // type_: StorageType,
 // inner: IndexMap<String, Entry>,
 package storage
+
+type Storage struct {
+}

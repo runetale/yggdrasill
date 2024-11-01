@@ -9,6 +9,10 @@ type ChatOption struct {
 	History      []string
 }
 
-func NewChatOption() *ChatOption {
-	return &ChatOption{}
+func NewChatOption(systemPrompt string, prompt string, history []string) *ChatOption {
+	return &ChatOption{
+		SystemPrompt: systemPrompt,
+		Prompt:       prompt,
+		History:      history,
+	}
 }
