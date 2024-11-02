@@ -10,24 +10,24 @@ import (
 
 type Engine struct {
 	channel    *events.Channel
-	client     *llm.LLMClient
+	factory    *llm.LLMFactory
 	state      *state.State
 	maxHistory uint
 	task       *task.Tasklet
 
-	closeCh chan struct{}
-	waitCh  chan struct{}
+	waitCh chan struct{}
 }
 
-func NewEngine(t *task.Tasklet, c *llm.LLMClient, maxIterations uint) *Engine {
+func NewEngine(t *task.Tasklet, c *llm.LLMFactory, maxIterations uint) *Engine {
 	channel := events.NewChannel()
 	s := state.NewState(channel, t, maxIterations)
 	return &Engine{
 		channel:    channel,
-		client:     c,
+		factory:    c,
 		maxHistory: t.GetMaxHistory(),
 		state:      s,
 		task:       t,
+		waitCh:     make(chan struct{}),
 	}
 }
 
@@ -37,7 +37,6 @@ func (e *Engine) Start() {
 }
 
 func (e *Engine) Stop() {
-	<-e.closeCh
 	close(e.waitCh)
 }
 
@@ -58,23 +57,41 @@ func (e *Engine) consumeEvent() {
 }
 
 func (e *Engine) automaton() {
-	// prepare chat option
-	option := e.prepareAutomaton()
+	for {
+		// prepare chat option
+		option := e.prepareAutomaton()
 
-	// チャネルに送信
-	// on_state_update
+		// request to chat
+		invocations := []*llm.Invocation{}
 
-	// llmからresponseとtool_callsをもらう
-	// generator.chat
+		// NOTE:
+		// 1.toolCalls
+		// 2.response
+		// 1,2 iteration creates an invocation
+		toolCalls, response := e.factory.Chat(option)
+		if toolCalls == nil {
+			// use our strategy
+			invocations = 
+		} else {
+			// use native function call by model supports
+			invocations = toolCalls
+		}
 
-	// もらったtool_callsのinvocationsからを使用して、コマンドを実行
-	// chat historyに追加
-	// チャネルに送信
+		// チャネルに送信
+		// on_state_update
 
-	// 再度実行無限ループ
+		// llmからresponseとtool_callsをもらう
+		// generator.chat
 
-	// Engineを修了する
-	e.closeCh <- struct{}{}
+		// もらったtool_callsのinvocationsからを使用して、コマンドを実行
+		// chat historyに追加
+		// チャネルに送信
+
+		// 再度実行無限ループ
+
+		// Engineを修了する
+		e.Stop()
+	}
 }
 
 func (e *Engine) prepareAutomaton() *llm.ChatOption {
@@ -88,8 +105,8 @@ func (e *Engine) prepareAutomaton() *llm.ChatOption {
 	// get prompt by state
 	prompt := e.task.GetPrompt()
 
-	// get history by state
-	history := e.state.GetChatHistory(int(e.maxHistory))
+	// to chat history, return the history of messsagesb by maxHistory count
+	history := e.state.ToChatHistory(int(e.maxHistory))
 
 	return llm.NewChatOption(systemPrompt, prompt, history)
 }

@@ -156,7 +156,8 @@ func (s *State) GetCurrentStep() uint {
 	return s.metrics.currentStep
 }
 
-func (s *State) GetChatHistory(max int) []*llm.Message {
+// when this function called from `first chat“ and `on state update`
+func (s *State) ToChatHistory(max int) []*llm.Message {
 	var latest []*Execution
 	if len(s.history) > max {
 		latest = s.history[:max+1]
@@ -168,6 +169,7 @@ func (s *State) GetChatHistory(max int) []*llm.Message {
 		return nil
 	}
 
+	// to messages
 	history := []*llm.Message{}
 	for _, entry := range latest {
 		// agent messages
@@ -180,8 +182,12 @@ func (s *State) GetChatHistory(max int) []*llm.Message {
 		} else if entry.Invocation != nil {
 			history = append(history, &llm.Message{
 				MessageType: llm.AGETNT,
-				Response:    nil,
-				Invocation:  entry.Invocation,
+				// parse to invocation to string,
+				// to including the results of executing a "function call" when executing factory.Chat()
+
+				// todo: continue here
+				Response:   entry.Invocation,
+				Invocation: entry.Invocation,
 			})
 		}
 

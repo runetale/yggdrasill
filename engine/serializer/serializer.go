@@ -11,6 +11,7 @@ import (
 
 	"github.com/runetale/notch/engine/action"
 	"github.com/runetale/notch/engine/state"
+	"github.com/runetale/notch/llm"
 )
 
 //go:embed actions.prompt
@@ -124,4 +125,20 @@ func actionsForState(state *state.State) (string, error) {
 	}
 
 	return builder.String(), nil
+}
+
+func ParseToInvocation(raw *string) []llm.Invocation {
+	return nil
+}
+
+func SerializeInvocation(inv *llm.Invocation) string {
+	return ""
+}
+
+func SerializeAction(ac *action.Action) string {
+	return ""
+}
+
+func SerializeStorage(ac *action.Action) string {
+	return ""
 }

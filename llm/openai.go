@@ -70,7 +70,7 @@ func NewOpenAIClient(model string, apikey string, url string, port uint16) LLMCl
 	}
 }
 
-func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string, error) {
+func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string) {
 	chathistory := []openai.ChatCompletionMessage{
 		{
 			Role:      openai.ChatMessageRoleSystem,
@@ -85,24 +85,29 @@ func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string, error) {
 	}
 
 	// add chat history
-	for _, m := range option.GetHistory() {
-		switch m.MessageType {
-		case AGETNT:
-			chathistory = append(chathistory, openai.ChatCompletionMessage{
-				Role:      openai.ChatMessageRoleAssistant,
-				Content:   *m.Response,
-				ToolCalls: nil,
-			})
-		case FEEDBACK:
-			chathistory = append(chathistory, openai.ChatCompletionMessage{
-				Role:      openai.ChatMessageRoleUser,
-				Content:   *m.Response,
-				ToolCalls: nil,
-			})
+	if option.GetHistory() != nil {
+		for _, m := range option.GetHistory() {
+			switch m.MessageType {
+			case AGETNT:
+				chathistory = append(chathistory, openai.ChatCompletionMessage{
+					Role:      openai.ChatMessageRoleAssistant,
+					Content:   *m.Response,
+					ToolCalls: nil,
+				})
+			case FEEDBACK:
+				chathistory = append(chathistory, openai.ChatCompletionMessage{
+					Role:      openai.ChatMessageRoleUser,
+					Content:   *m.Response,
+					ToolCalls: nil,
+				})
+			}
 		}
 	}
 
-	// TODO: function tools
+	// TODO: support native function tools,
+	// if you using function call, set Tools for ChatCompletionRequest
+
+	// request to chat
 	req := openai.ChatCompletionRequest{
 		Model:    o.model,
 		Messages: chathistory,
@@ -114,10 +119,10 @@ func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string, error) {
 		req,
 	)
 
-	// TODO: check rate limit
+	// TODO: check rate limit, retry to chat
 	if err != nil {
 		fmt.Printf("chat error %v\n", err)
-		return nil, "", err
+		panic(err)
 	}
 
 	// add invocations
@@ -144,7 +149,6 @@ func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string, error) {
 		err := json.Unmarshal([]byte(tool.function.args), &result)
 		if err != nil {
 			fmt.Printf("tool call parsing error %v\n", err)
-			return nil, "", err
 		}
 
 		for name, value := range result {
@@ -164,5 +168,5 @@ func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string, error) {
 		invocations = append(invocations, in)
 	}
 
-	return invocations, content, nil
+	return invocations, content
 }
