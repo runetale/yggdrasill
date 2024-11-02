@@ -8,9 +8,9 @@ type Execution struct {
 	// llm response
 	Response *string
 	// parsed llm response to invocation
-	invocation *llm.Invocation
-	result     *string
-	error      error
+	Invocation *llm.Invocation
+	Result     *string
+	Error      error
 }
 
 func NewExecution() *Execution {

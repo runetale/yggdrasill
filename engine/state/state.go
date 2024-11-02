@@ -7,6 +7,7 @@ import (
 
 	"github.com/runetale/notch/engine/events"
 	"github.com/runetale/notch/engine/namespace"
+	"github.com/runetale/notch/llm"
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/task"
 	"github.com/runetale/notch/types"
@@ -104,8 +105,8 @@ func NewState(
 		if key == "goal" {
 			prompt := task.GetPrompt()
 			fmt.Println("set goal prompt")
-			fmt.Printf("%s\n", *prompt)
-			storage.SetCurrent(*prompt)
+			fmt.Printf("%s\n", prompt)
+			storage.SetCurrent(prompt)
 		}
 	}
 
@@ -136,8 +137,7 @@ func (s *State) GetPrompt() string {
 	if s.task.Prompt != nil {
 		return *s.task.Prompt
 	}
-
-	return "prompt not set"
+	return "state prompt not set"
 }
 
 func (s *State) GetStorages() map[string]*storage.Storage {
@@ -156,6 +156,45 @@ func (s *State) GetCurrentStep() uint {
 	return s.metrics.currentStep
 }
 
-func (s *State) GetChatHistory() uint {
-	return s.metrics.currentStep
+func (s *State) GetChatHistory(max int) []*llm.Message {
+	var latest []*Execution
+	if len(s.history) > max {
+		latest = s.history[:max+1]
+	} else {
+		latest = s.history
+	}
+
+	history := []*llm.Message{}
+	for _, entry := range latest {
+		if entry.Response != nil {
+			history = append(history, &llm.Message{
+				MessageType: llm.AGETNT,
+				Response:    entry.Response,
+				Invocation:  nil,
+			})
+		} else if entry.Invocation != nil {
+			history = append(history, &llm.Message{
+				MessageType: llm.AGETNT,
+				Response:    nil,
+				Invocation:  entry.Invocation,
+			})
+		}
+
+		var res string
+		if entry.Error != nil {
+			res = fmt.Sprintf("ERROR: %s", entry.Error.Error())
+		} else if entry.Result != nil {
+			res = *entry.Result
+		} else {
+			res = ""
+		}
+
+		history = append(history, &llm.Message{
+			MessageType: llm.FEEDBACK,
+			Response:    &res,
+			Invocation:  entry.Invocation,
+		})
+	}
+
+	return history
 }

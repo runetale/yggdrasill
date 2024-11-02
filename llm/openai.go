@@ -75,17 +75,17 @@ func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string, error) {
 
 	// add chat history
 	for _, m := range option.GetHistory() {
-		switch m.messageType {
+		switch m.MessageType {
 		case AGETNT:
 			chathistory = append(chathistory, openai.ChatCompletionMessage{
 				Role:      openai.ChatMessageRoleAssistant,
-				Content:   m.response,
+				Content:   *m.Response,
 				ToolCalls: nil,
 			})
 		case FEEDBACK:
 			chathistory = append(chathistory, openai.ChatCompletionMessage{
 				Role:      openai.ChatMessageRoleUser,
-				Content:   m.response,
+				Content:   *m.Response,
 				ToolCalls: nil,
 			})
 		}

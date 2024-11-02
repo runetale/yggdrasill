@@ -9,10 +9,11 @@ import (
 )
 
 type Engine struct {
-	channel *events.Channel
-	client  *llm.LLMClient
-	state   *state.State
-	task    *task.Tasklet
+	channel    *events.Channel
+	client     *llm.LLMClient
+	state      *state.State
+	maxHistory uint
+	task       *task.Tasklet
 
 	closeCh chan struct{}
 	waitCh  chan struct{}
@@ -22,10 +23,11 @@ func NewEngine(t *task.Tasklet, c *llm.LLMClient, maxIterations uint) *Engine {
 	channel := events.NewChannel()
 	s := state.NewState(channel, t, maxIterations)
 	return &Engine{
-		channel: channel,
-		client:  c,
-		state:   s,
-		task:    t,
+		channel:    channel,
+		client:     c,
+		maxHistory: t.GetMaxHistory(),
+		state:      s,
+		task:       t,
 	}
 }
 
@@ -87,6 +89,7 @@ func (e *Engine) prepareAutomaton() *llm.ChatOption {
 	prompt := e.task.GetPrompt()
 
 	// get history by state
+	history := e.state.GetChatHistory(int(e.maxHistory))
 
-	return llm.NewChatOption("", "", nil)
+	return llm.NewChatOption(systemPrompt, prompt, history)
 }

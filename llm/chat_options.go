@@ -8,9 +8,9 @@ const (
 )
 
 type Message struct {
-	messageType MessageType
-	response    string
-	invocation  Invocation
+	MessageType MessageType
+	Response    *string
+	Invocation  *Invocation
 }
 
 type ToolCall struct {

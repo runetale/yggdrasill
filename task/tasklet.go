@@ -105,12 +105,19 @@ func (t *Tasklet) GetUsing() []*string {
 	return t.Using
 }
 
-func (t *Tasklet) GetPrompt() *string {
-	return t.Prompt
+func (t *Tasklet) GetPrompt() string {
+	if t.Prompt != nil {
+		return *t.Prompt
+	}
+	return "tasklet prompt not set"
 }
 
 func (t *Tasklet) GetSystemPrompt() string {
 	return t.SystemPrompt
+}
+
+func (t *Tasklet) GetMaxHistory() uint {
+	return 50
 }
 
 // user defined yaml tasks
