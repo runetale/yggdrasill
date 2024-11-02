@@ -49,8 +49,8 @@ func (e *Engine) consumeEvent() {
 	for {
 		// waiting receiver for each events
 		event := <-e.channel.Receiver
-		switch event {
-		case events.MetricsUpdate:
+		switch event.EventType() {
+		case events.ActionExecuted:
 
 		}
 	}
@@ -78,6 +78,7 @@ func (e *Engine) automaton() {
 
 func (e *Engine) prepareAutomaton() *llm.ChatOption {
 	// get system prompt by state
+	e.state.OnEvent(events.NewEvent(events.MetricsUpdate, "engine", "prepare-automaton"))
 
 	// get prompt by state
 

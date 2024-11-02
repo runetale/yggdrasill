@@ -1,26 +1,43 @@
 package events
 
-type Event string
+type EventType string
 
 const (
-	MetricsUpdate  Event = ""
-	StorageUpdate  Event = ""
-	StateUpdate    Event = ""
-	InvalidUpdate  Event = ""
-	InvalidAction  Event = ""
-	ActionTimeOut  Event = ""
-	ActionExecuted Event = ""
-	TaskComplete   Event = ""
+	MetricsUpdate  EventType = "metrics_update"
+	StorageUpdate  EventType = "storage_update"
+	StateUpdate    EventType = "state_update"
+	InvalidUpdate  EventType = "invaild_update"
+	InvalidAction  EventType = "invalid_action"
+	ActionTimeOut  EventType = "action_timeout"
+	ActionExecuted EventType = "aciton_executed"
+	TaskComplete   EventType = "task_comlete"
 )
 
-// TODO: Eventだけではなく、他の型も送るようにする
+type Event struct {
+	eventType EventType
+	name      string
+	happened  string
+}
+
+func NewEvent(evenType EventType, name, happened string) *Event {
+	return &Event{
+		eventType: evenType,
+		name:      name,
+		happened:  happened,
+	}
+}
+
+func (e *Event) EventType() EventType {
+	return e.eventType
+}
+
 type Channel struct {
-	Sender   chan<- Event
-	Receiver <-chan Event
+	Sender   chan<- *Event
+	Receiver <-chan *Event
 }
 
 func NewChannel() *Channel {
-	ch := make(chan Event)
+	ch := make(chan *Event)
 	return &Channel{
 		Sender:   ch,
 		Receiver: ch,

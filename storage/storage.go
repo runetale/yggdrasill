@@ -32,11 +32,11 @@ type Storage struct {
 	storageType types.StorageType
 	entry       map[string]*Entry
 
-	OnEventCallback func(event events.Event)
+	OnEventCallback func(event *events.Event)
 }
 
 func NewStorage(name string, storageType types.StorageType,
-	OnEventCallback func(event events.Event),
+	OnEventCallback func(event *events.Event),
 ) *Storage {
 	entry := make(map[string]*Entry, 0)
 
@@ -71,28 +71,28 @@ func (s *Storage) GetStartedAt() time.Duration {
 	return s.entry[STARTED_AT_TAG].time
 }
 
-func (s *Storage) OnEvent(event string) {
-	s.OnEventCallback(events.Event(event))
+func (s *Storage) OnEvent(event *events.Event) {
+	s.OnEventCallback(event)
 }
 
 func (s *Storage) AddData(key, data string) {
 	s.entry[key] = NewEntry(data)
-	s.OnEvent("add data")
+	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "add-data"))
 }
 
 func (s *Storage) AddTagged(key, data string) {
 	s.entry[key] = NewEntry(data)
-	s.OnEvent("add tagged")
+	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "add-tagged"))
 }
 
 func (s *Storage) DelTagged(key string) {
 	s.entry[key] = nil
-	s.OnEvent("del tagged")
+	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "del-tagged"))
 }
 
 func (s *Storage) GetTagged(key string) string {
 	inner := s.entry[key]
-	s.OnEvent("get tagged")
+	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "get-tagged"))
 	return inner.data
 }
 
@@ -106,35 +106,35 @@ func (s *Storage) AddCompletion(data string) {
 	lastKey := keys[len(keys)-1]
 	lastValue := s.entry[lastKey]
 	lastValue.data = data
-	s.OnEvent("get completion")
+	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "add-completion"))
 }
 
 func (s *Storage) DelCompletion(pos int) {
 	tag := strconv.Itoa(pos)
 	s.entry[tag] = nil
-	s.OnEvent("delete completion")
+	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "delete-completion"))
 }
 
 func (s *Storage) SetComplete(pos int) bool {
 	tag := strconv.Itoa(pos)
 	s.entry[tag].complete = true
-	s.OnEvent("set complete")
+	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "set-complete"))
 	return true
 }
 
 func (s *Storage) SetInComplete(pos int) bool {
 	tag := strconv.Itoa(pos)
 	s.entry[tag].complete = false
-	s.OnEvent("set incomplete")
+	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "set-incomplete"))
 	return true
 }
 
 func (s *Storage) SetCurrent(data string) {
 	s.entry[CURRENT_TAG] = NewEntry(data)
-	s.OnEvent("set current")
+	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "set-current"))
 }
 
 func (s *Storage) Clear(data string) {
 	s.entry = make(map[string]*Entry, 0)
-	s.OnEvent("clear storage")
+	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "clear-storage"))
 }

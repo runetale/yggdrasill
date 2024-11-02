@@ -25,7 +25,7 @@ type State struct {
 	complete bool
 
 	// call from engine and storage
-	onEventCallback func(event events.Event)
+	onEventCallback func(event *events.Event)
 }
 
 // TODO implement rag model
@@ -81,7 +81,7 @@ func NewState(
 	namespaces = append(namespaces, namespace.NewNamespace(types.CUSTOM, functions))
 
 	// set callback function
-	onEventCallback := func(event events.Event) {
+	onEventCallback := func(event *events.Event) {
 		s.sender.Sender <- event
 	}
 	s.onEventCallback = onEventCallback
@@ -117,6 +117,6 @@ func NewState(
 }
 
 // called from engine
-func (s *State) OnEvent(event events.Event) {
+func (s *State) OnEvent(event *events.Event) {
 	s.onEventCallback(event)
 }
