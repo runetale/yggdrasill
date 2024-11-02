@@ -90,7 +90,7 @@ func NewState(
 	for _, ns := range namespaces {
 		for _, s := range ns.GetStorages() {
 			if s == nil {
-				newStorage := storage.NewStorage(ns.GetName(), types.UNTAGGED, s.OnEventCallback)
+				newStorage := storage.NewStorage(ns.GetName(), types.UNTAGGED, onEventCallback)
 				s = newStorage
 				storages[ns.GetName()] = newStorage
 			}
