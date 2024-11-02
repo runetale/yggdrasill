@@ -24,6 +24,9 @@ func displaySystemPrompt(state *state.State) (string, error) {
 		return "", err
 	}
 
+	task := state.GetTask()
+	sysprompt := task.GetSystemPrompt()
+
 	var result bytes.Buffer
 	err = tmpl.Execute(&result, map[string]string{
 		"SystemPrompt":     systemPrompt,

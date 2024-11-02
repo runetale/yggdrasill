@@ -87,12 +87,14 @@ func NewState(
 	s.onEventCallback = onEventCallback
 
 	// create storages by namespaces
-	for _, ns := range namespaces {
-		for _, s := range ns.GetStorages() {
-			if s == nil {
-				newStorage := storage.NewStorage(ns.GetName(), types.UNTAGGED, onEventCallback)
-				s = newStorage
-				storages[ns.GetName()] = newStorage
+	for _, namespace := range namespaces {
+		for _, currentStorage := range namespace.GetStorages() {
+			// if storages nil, set to newstorage by namespace
+			if currentStorage == nil {
+				newStorage := storage.NewStorage(namespace.GetName(), namespace.GetStorageType(), onEventCallback)
+				// set namespace to storage
+				currentStorage = newStorage
+				storages[namespace.GetName()] = newStorage
 			}
 		}
 	}
@@ -119,4 +121,8 @@ func NewState(
 // called from engine
 func (s *State) OnEvent(event *events.Event) {
 	s.onEventCallback(event)
+}
+
+func (s *State) GetTask() *task.Tasklet {
+	return s.task
 }

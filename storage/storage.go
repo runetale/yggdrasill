@@ -63,7 +63,7 @@ func (s *Storage) GetName() string {
 	return s.name
 }
 
-func (s *Storage) GetType() types.StorageType {
+func (s *Storage) GetStorageType() types.StorageType {
 	return s.storageType
 }
 

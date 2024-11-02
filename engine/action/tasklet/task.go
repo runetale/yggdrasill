@@ -18,14 +18,27 @@ type Tasklet struct {
 	examplePayload   *string
 	timeout          string
 	tool             string
+	storageType      types.StorageType
+	predefined       *map[string]string
 }
 
 func NewTasklet() action.Action {
-	return &Tasklet{}
+	return &Tasklet{
+		storageType: types.UNTAGGED,
+		predefined:  nil,
+	}
 }
 
 func (s *Tasklet) Name() string {
 	return "shell"
+}
+
+func (s *Tasklet) Predefined() *map[string]string {
+	return s.predefined
+}
+
+func (s *Tasklet) StorageType() types.StorageType {
+	return s.storageType
 }
 
 func (s *Tasklet) Description() string {

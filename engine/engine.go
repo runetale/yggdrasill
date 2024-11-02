@@ -77,8 +77,8 @@ func (e *Engine) automaton() {
 }
 
 func (e *Engine) prepareAutomaton() *llm.ChatOption {
-	// get system prompt by state
 	e.state.OnEvent(events.NewEvent(events.MetricsUpdate, "engine", "prepare-automaton"))
+	// get system prompt by state
 
 	// get prompt by state
 

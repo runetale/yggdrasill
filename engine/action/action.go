@@ -11,6 +11,8 @@ import (
 type Action interface {
 	GetNamespace() types.NamespaceType
 	Name() string
+	StorageType() types.StorageType
+	Predefined() *map[string]string
 	Description() string
 	Run(event storage.Storage, attributes map[string]string, payload string) string
 	Timeout() time.Duration

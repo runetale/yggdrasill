@@ -12,41 +12,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Task interface {
-	// fn to_system_prompt(&self) -> Result<String>;
-	// fn to_prompt(&self) -> Result<String>;
-	// fn get_functions(&self) -> Vec<Namespace>;
-
-	// fn get_timeout(&self) -> Option<Duration> {
-	// 	None
-	// }
-
-	// fn get_rag_config(&self) -> Option<mini_rag::Configuration> {
-	// 	None
-	// }
-
-	// fn max_history_visibility(&self) -> u16 {
-	// 	50
-	// }
-
-	// fn guidance(&self) -> Result<Vec<String>> {
-	// 	self.base_guidance()
-	// }
-
-	// fn namespaces(&self) -> Option<Vec<String>> {
-	// 	None
-	// }
-
-	//	fn base_guidance(&self) -> Result<Vec<String>> {
-	//		// basic rules to extend
-	//		Ok(include_str!("basic_guidance.prompt")
-	//			.split('\n')
-	//			.map(|l| l.trim().to_string())
-	//			.filter(|l| !l.is_empty())
-	//			.collect())
-	//	}
-}
-
 type Tasklet struct {
 	Name         string
 	Folder       string
@@ -142,6 +107,10 @@ func (t *Tasklet) GetUsing() []*string {
 
 func (t *Tasklet) GetPrompt() *string {
 	return t.Prompt
+}
+
+func (t *Tasklet) GetSystemPrompt() string {
+	return t.SystemPrompt
 }
 
 // user defined yaml tasks
