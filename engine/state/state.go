@@ -28,6 +28,9 @@ type State struct {
 	// call from engine and storage
 	onEventCallback func(event *events.Event)
 
+	// serialize callback function
+	SerializeInvocationCallback func(inv *llm.Invocation) *string
+
 	metrics *Metrics
 }
 
@@ -36,15 +39,18 @@ func NewState(
 	sender *events.Channel,
 	task *task.Tasklet,
 	maxIterations uint,
+	serializationInvocation func(inv *llm.Invocation) *string,
 ) *State {
 	namespaces := make([]*namespace.Namespace, 0)
 	storages := make(map[string]*storage.Storage, 0)
 	variables := make(map[string]string, 0)
 	history := make([]*Execution, 0)
 	complete := false
+
 	s := &State{
 		sender: sender,
 	}
+	s.SerializeInvocationCallback = serializationInvocation
 
 	// get namespaces
 	using := task.GetUsing()
@@ -184,9 +190,7 @@ func (s *State) ToChatHistory(max int) []*llm.Message {
 				MessageType: llm.AGETNT,
 				// parse to invocation to string,
 				// to including the results of executing a "function call" when executing factory.Chat()
-
-				// todo: continue here
-				Response:   entry.Invocation,
+				Response:   s.serializeInvocation(entry.Invocation),
 				Invocation: entry.Invocation,
 			})
 		}
@@ -209,4 +213,8 @@ func (s *State) ToChatHistory(max int) []*llm.Message {
 	}
 
 	return history
+}
+
+func (s *State) serializeInvocation(inv *llm.Invocation) *string {
+	return s.SerializeInvocationCallback(inv)
 }

@@ -20,7 +20,13 @@ type Engine struct {
 
 func NewEngine(t *task.Tasklet, c *llm.LLMFactory, maxIterations uint) *Engine {
 	channel := events.NewChannel()
-	s := state.NewState(channel, t, maxIterations)
+
+	serializationInvocationCb := func(inv *llm.Invocation) *string {
+		return serializer.SerializeInvocation(inv)
+	}
+
+	s := state.NewState(channel, t, maxIterations, serializationInvocationCb)
+
 	return &Engine{
 		channel:    channel,
 		factory:    c,
@@ -71,7 +77,7 @@ func (e *Engine) automaton() {
 		toolCalls, response := e.factory.Chat(option)
 		if toolCalls == nil {
 			// use our strategy
-			invocations = 
+			invocations = serializer.TryParse(&response)
 		} else {
 			// use native function call by model supports
 			invocations = toolCalls

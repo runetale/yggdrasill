@@ -127,12 +127,13 @@ func actionsForState(state *state.State) (string, error) {
 	return builder.String(), nil
 }
 
-func ParseToInvocation(raw *string) []llm.Invocation {
+// try_parseの実装から入る
+func TryParse(raw *string) []*llm.Invocation {
 	return nil
 }
 
-func SerializeInvocation(inv *llm.Invocation) string {
-	return ""
+func SerializeInvocation(inv *llm.Invocation) *string {
+	return nil
 }
 
 func SerializeAction(ac *action.Action) string {
