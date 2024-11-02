@@ -13,7 +13,6 @@ import (
 )
 
 type Task interface {
-	// これらの関数を表示
 	// fn to_system_prompt(&self) -> Result<String>;
 	// fn to_prompt(&self) -> Result<String>;
 	// fn get_functions(&self) -> Vec<Namespace>;
@@ -139,6 +138,10 @@ func (t *Tasklet) Setup(userPrompt *string) error {
 
 func (t *Tasklet) GetUsing() []*string {
 	return t.Using
+}
+
+func (t *Tasklet) GetPrompt() *string {
+	return t.Prompt
 }
 
 // user defined yaml tasks

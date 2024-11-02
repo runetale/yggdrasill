@@ -13,12 +13,12 @@ import (
 )
 
 type State struct {
-	Task      task.Tasklet
-	Storages  map[string]storage.Storage
-	Variables map[string]string // pre-define variables
+	task      task.Tasklet
+	storages  map[string]*storage.Storage
+	variables map[string]string // pre-define variables
 	// 各Namespaceを持った構造体
-	Namespaces []*namespace.Namespace
-	History    []*Execution // execed histories
+	namespaces []*namespace.Namespace
+	history    []*Execution // execed histories
 
 	// sent to engine.consumeEvent
 	sender   chan<- events.Channel
@@ -32,8 +32,10 @@ func NewState(
 	maxIterations uint64,
 ) *State {
 	namespaces := make([]*namespace.Namespace, 0)
+	storages := make(map[string]*storage.Storage, 0)
 	variables := make(map[string]string, 0)
 	history := make([]*Execution, 0)
+	complete := false
 
 	// get namespaces
 	using := task.GetUsing()
@@ -56,8 +58,8 @@ func NewState(
 
 	// set variables
 	for _, o := range namespaces {
-		required := o.Action.RequiredVariables()
-		log.Printf("actions %s requires %v\n", o.Action.Name(), required)
+		required := o.GetAction().RequiredVariables()
+		log.Printf("actions %s requires %v\n", o.GetAction().Name(), required)
 		for _, vn := range required {
 			exp := fmt.Sprintf("$%s", vn)
 			varname, value, err := task.ParseVariableExpr(exp)
@@ -73,11 +75,30 @@ func NewState(
 	namespaces = append(namespaces, namespace.NewNamespace(types.CUSTOM, functions))
 
 	// create storages by namespaces
+	for _, ns := range namespaces {
+		for _, s := range ns.GetStorages() {
+			if s == nil {
+				newStorage := storage.NewStorage(ns.GetName(), types.UNTAGGED)
+				s = newStorage
+				storages[ns.GetName()] = newStorage
+			}
+		}
+	}
+	for key, storage := range storages {
+		if key == "goal" {
+			prompt := task.GetPrompt()
+			fmt.Println("set goal prompt")
+			fmt.Printf("%s\n", *prompt)
+			storage.SetCurrent(*prompt)
+		}
+	}
 
 	return &State{
-		Namespaces: namespaces,
-		Variables:  variables,
-		History:    history,
+		namespaces: namespaces,
+		variables:  variables,
+		storages:   storages,
+		history:    history,
 		sender:     sender,
+		complete:   complete,
 	}
 }

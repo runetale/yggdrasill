@@ -11,10 +11,10 @@ import (
 
 // managed all namespace actions
 type Namespace struct {
-	Name        string
-	Description string
-	Stroages    []*storage.Storage
-	Action      action.Action
+	name        string
+	description string
+	stroages    []*storage.Storage
+	action      action.Action
 }
 
 func NewNamespace(ns types.NamespaceType, functions []task.Function) *Namespace {
@@ -27,9 +27,25 @@ func NewNamespace(ns types.NamespaceType, functions []task.Function) *Namespace 
 	}
 
 	return &Namespace{
-		Name:        ac.Name(),
-		Description: ac.Description(),
-		Stroages:    nil,
-		Action:      ac,
+		name:        ac.Name(),
+		description: ac.Description(),
+		stroages:    nil,
+		action:      ac,
 	}
+}
+
+func (n *Namespace) GetName() string {
+	return n.action.Name()
+}
+
+func (n *Namespace) GetDescription() string {
+	return n.action.Description()
+}
+
+func (n *Namespace) GetAction() action.Action {
+	return n.action
+}
+
+func (n *Namespace) GetStorages() []*storage.Storage {
+	return n.stroages
 }
