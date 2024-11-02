@@ -23,6 +23,8 @@ type State struct {
 	// sent to engine.consumeEvent
 	sender   *events.Channel
 	complete bool
+
+	onEventCallback func(event events.Event)
 }
 
 // TODO implement rag model
@@ -74,11 +76,21 @@ func NewState(
 	functions := task.GetFunctions()
 	namespaces = append(namespaces, namespace.NewNamespace(types.CUSTOM, functions))
 
+	// set callback function
+	s := &State{
+		sender: sender,
+	}
+
+	onEventCallback := func(event events.Event) {
+		s.sender.Sender <- event
+	}
+	s.onEventCallback = onEventCallback
+
 	// create storages by namespaces
 	for _, ns := range namespaces {
 		for _, s := range ns.GetStorages() {
 			if s == nil {
-				newStorage := storage.NewStorage(ns.GetName(), types.UNTAGGED)
+				newStorage := storage.NewStorage(ns.GetName(), types.UNTAGGED, onEventCallback)
 				s = newStorage
 				storages[ns.GetName()] = newStorage
 			}
@@ -93,12 +105,16 @@ func NewState(
 		}
 	}
 
-	return &State{
-		namespaces: namespaces,
-		variables:  variables,
-		storages:   storages,
-		history:    history,
-		sender:     sender,
-		complete:   complete,
-	}
+	s.namespaces = namespaces
+	s.variables = variables
+	s.history = history
+	s.sender = sender
+	s.complete = complete
+
+	return s
+}
+
+// called from engine
+func (s *State) OnEvent(event events.Event) {
+	s.onEventCallback(event)
 }

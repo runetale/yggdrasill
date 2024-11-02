@@ -3,19 +3,14 @@ package events
 type Event string
 
 const (
-	MetricsUpdate Event = ""
-
-	StorageUpdate Event = ""
-
-	StateUpdate Event = ""
-
-	InvalidUpdate Event = ""
-	InvalidAction Event = ""
-
+	MetricsUpdate  Event = ""
+	StorageUpdate  Event = ""
+	StateUpdate    Event = ""
+	InvalidUpdate  Event = ""
+	InvalidAction  Event = ""
 	ActionTimeOut  Event = ""
 	ActionExecuted Event = ""
-
-	TaskComplete Event = ""
+	TaskComplete   Event = ""
 )
 
 // TODO: Eventだけではなく、他の型も送るようにする

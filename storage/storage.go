@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/runetale/notch/engine/events"
 	"github.com/runetale/notch/types"
 )
 
@@ -31,17 +32,19 @@ type Storage struct {
 	storageType types.StorageType
 	entry       map[string]*Entry
 
-	AddDataCallback func(key, data string)
-	OnEventCallback func(eventname string)
+	OnEventCallback func(event events.Event)
 }
 
-func NewStorage(name string, storageType types.StorageType) *Storage {
+func NewStorage(name string, storageType types.StorageType,
+	OnEventCallback func(event events.Event),
+) *Storage {
 	entry := make(map[string]*Entry, 0)
 
 	return &Storage{
-		name:        name,
-		storageType: storageType,
-		entry:       entry,
+		name:            name,
+		storageType:     storageType,
+		entry:           entry,
+		OnEventCallback: OnEventCallback,
 	}
 }
 
@@ -69,11 +72,12 @@ func (s *Storage) GetStartedAt() time.Duration {
 }
 
 func (s *Storage) OnEvent(event string) {
-	s.OnEventCallback(event)
+	s.OnEventCallback(events.Event(event))
 }
 
 func (s *Storage) AddData(key, data string) {
-	s.AddDataCallback(key, data)
+	s.entry[key] = NewEntry(data)
+	s.OnEvent("add data")
 }
 
 func (s *Storage) AddTagged(key, data string) {

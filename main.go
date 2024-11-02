@@ -25,7 +25,7 @@ func main() {
 		panic(err)
 	}
 
-	model, err := llm.NewLLMClient(options, apiKey)
+	llm, err := llm.NewLLMClient(options, apiKey)
 	if err != nil {
 		panic(err)
 	}
@@ -38,14 +38,14 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("notch v0.0.1 🧠 gpt4-o @openai %s", tasklet.Name)
-
 	err = tasklet.Setup(&prompt)
 	if err != nil {
 		panic(err)
 	}
 
-	e := engine.NewEngine(tasklet, model)
+	fmt.Printf("notch v0.0.1 🧠 gpt4-o @openai %s", tasklet.Name)
+
+	e := engine.NewEngine(tasklet, llm)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
