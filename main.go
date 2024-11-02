@@ -7,16 +7,30 @@ import (
 	"syscall"
 
 	"github.com/runetale/notch/engine"
+	"github.com/runetale/notch/llm"
 	"github.com/runetale/notch/task"
 )
 
-// get from args
+// TODO: fix get from args
 var taskpath = "task.yaml"
 var prompt = "find the process consuming more ram"
+var generator = "openai://gpt-4@localhost:12321"
+var contextWindow uint32 = 8000
+var apiKey = ""
 
-// cli entry point
 func main() {
-	// setup models
+	// setup llm
+	options, err := llm.NewLLMOptions(generator, contextWindow)
+	if err != nil {
+		panic(err)
+	}
+
+	model, err := llm.NewLLMClient(options, apiKey)
+	if err != nil {
+		panic(err)
+	}
+
+	// TODO: add embedder for RAG
 
 	// setup task
 	tasklet, err := task.GetFromPath(taskpath)
@@ -31,7 +45,8 @@ func main() {
 		panic(err)
 	}
 
-	e := engine.NewEngine(tasklet, nil)
+	e := engine.NewEngine(tasklet, model)
+
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 	go func() {

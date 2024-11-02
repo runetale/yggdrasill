@@ -42,20 +42,24 @@ const (
 	GPT3Dot5TurboInstruct = "gpt-3.5-turbo-instruct"
 )
 
-type OpenAI struct {
+type OpenAIClient struct {
 	model  string
 	client *openai.Client
+	url    string
+	port   uint16
 }
 
-func NewOpenAI(model string, apikey string) LLMClientImpl {
+func NewOpenAIClient(model string, apikey string, url string, port uint16) LLMClientImpl {
 	client := openai.NewClient(apikey)
-	return &OpenAI{
+	return &OpenAIClient{
 		model:  model,
 		client: client,
+		url:    url,
+		port:   port,
 	}
 }
 
-func (o *OpenAI) Chat(option *ChatOption) ([]*Invocation, string, error) {
+func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string, error) {
 	chathistory := []openai.ChatCompletionMessage{
 		{
 			Role:      openai.ChatMessageRoleSystem,
@@ -101,7 +105,7 @@ func (o *OpenAI) Chat(option *ChatOption) ([]*Invocation, string, error) {
 
 	// TODO: check rate limit
 	if err != nil {
-		fmt.Println("chat error %v", err)
+		fmt.Printf("chat error %v\n", err)
 		return nil, "", err
 	}
 
@@ -128,7 +132,7 @@ func (o *OpenAI) Chat(option *ChatOption) ([]*Invocation, string, error) {
 		var result map[string]string
 		err := json.Unmarshal([]byte(tool.function.args), &result)
 		if err != nil {
-			fmt.Println("tool call parsing error %v", err)
+			fmt.Printf("tool call parsing error %v\n", err)
 			return nil, "", err
 		}
 

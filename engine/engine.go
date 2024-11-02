@@ -9,7 +9,7 @@ import (
 
 type Engine struct {
 	channel *events.Channel
-	client  *llm.LLMClinet
+	client  *llm.LLMClient
 	state   *state.State
 	task    *task.Tasklet
 
@@ -17,7 +17,7 @@ type Engine struct {
 	waitCh  chan struct{}
 }
 
-func NewEngine(t *task.Tasklet, c *llm.LLMClinet) *Engine {
+func NewEngine(t *task.Tasklet, c *llm.LLMClient) *Engine {
 	channel := events.NewChannel()
 
 	s := state.NewState(channel, t, 0)
