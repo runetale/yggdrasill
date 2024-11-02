@@ -13,7 +13,7 @@ import (
 )
 
 type State struct {
-	task      task.Tasklet
+	task      *task.Tasklet
 	storages  map[string]*storage.Storage
 	variables map[string]string // pre-define variables
 	// 各Namespaceを持った構造体
@@ -24,6 +24,7 @@ type State struct {
 	sender   *events.Channel
 	complete bool
 
+	// call from engine and storage
 	onEventCallback func(event events.Event)
 }
 
@@ -38,6 +39,9 @@ func NewState(
 	variables := make(map[string]string, 0)
 	history := make([]*Execution, 0)
 	complete := false
+	s := &State{
+		sender: sender,
+	}
 
 	// get namespaces
 	using := task.GetUsing()
@@ -77,10 +81,6 @@ func NewState(
 	namespaces = append(namespaces, namespace.NewNamespace(types.CUSTOM, functions))
 
 	// set callback function
-	s := &State{
-		sender: sender,
-	}
-
 	onEventCallback := func(event events.Event) {
 		s.sender.Sender <- event
 	}
@@ -90,7 +90,7 @@ func NewState(
 	for _, ns := range namespaces {
 		for _, s := range ns.GetStorages() {
 			if s == nil {
-				newStorage := storage.NewStorage(ns.GetName(), types.UNTAGGED, onEventCallback)
+				newStorage := storage.NewStorage(ns.GetName(), types.UNTAGGED, s.OnEventCallback)
 				s = newStorage
 				storages[ns.GetName()] = newStorage
 			}
@@ -105,6 +105,8 @@ func NewState(
 		}
 	}
 
+	s.task = task
+	s.storages = storages
 	s.namespaces = namespaces
 	s.variables = variables
 	s.history = history
