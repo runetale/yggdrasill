@@ -12,17 +12,23 @@ import (
 type Shell struct {
 	storageType types.StorageType
 	predefined  *map[string]string
+	actionsList []action.Action
 }
 
 func NewShell() action.Action {
 	return &Shell{
 		storageType: types.UNTAGGED,
 		predefined:  nil,
+		actionsList: nil,
 	}
 }
 
 func (s *Shell) StorageType() types.StorageType {
 	return s.storageType
+}
+
+func (s *Shell) GetActionsList() []action.Action {
+	return s.actionsList
 }
 
 func (s *Shell) Predefined() *map[string]string {
@@ -45,6 +51,15 @@ func (s *Shell) Run(storage storage.Storage, attributes map[string]string, paylo
 
 func (s *Shell) Timeout() time.Duration {
 	return time.Duration(0)
+}
+
+func (s *Shell) ExamplePayload() *string {
+	p := "ls -la"
+	return &p
+}
+
+func (s *Shell) ExampleAttributes() map[string]string {
+	return nil
 }
 
 func (s *Shell) RequiredVariables() []string {

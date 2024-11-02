@@ -10,6 +10,7 @@ import (
 // all namespace's implement this interfaces
 type Action interface {
 	GetNamespace() types.NamespaceType
+	GetActionsList() []Action
 	Name() string
 	StorageType() types.StorageType
 	Predefined() *map[string]string
@@ -19,4 +20,6 @@ type Action interface {
 	// "$SSH_HOST"などのvariablesを設定した場合に取得する
 	RequiredVariables() []string
 	RequiresUserConfirmation() bool
+	ExamplePayload() *string
+	ExampleAttributes() map[string]string
 }

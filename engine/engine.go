@@ -2,6 +2,7 @@ package engine
 
 import (
 	"github.com/runetale/notch/engine/events"
+	"github.com/runetale/notch/engine/serializer"
 	"github.com/runetale/notch/engine/state"
 	"github.com/runetale/notch/llm"
 	"github.com/runetale/notch/task"
@@ -17,11 +18,9 @@ type Engine struct {
 	waitCh  chan struct{}
 }
 
-func NewEngine(t *task.Tasklet, c *llm.LLMClient) *Engine {
+func NewEngine(t *task.Tasklet, c *llm.LLMClient, maxIterations uint) *Engine {
 	channel := events.NewChannel()
-
-	s := state.NewState(channel, t, 0)
-
+	s := state.NewState(channel, t, maxIterations)
 	return &Engine{
 		channel: channel,
 		client:  c,
@@ -79,9 +78,15 @@ func (e *Engine) automaton() {
 func (e *Engine) prepareAutomaton() *llm.ChatOption {
 	e.state.OnEvent(events.NewEvent(events.MetricsUpdate, "engine", "prepare-automaton"))
 	// get system prompt by state
+	systemPrompt, err := serializer.DisplaySystemPrompt(e.state)
+	if err != nil {
+
+	}
 
 	// get prompt by state
+	prompt := e.task.GetPrompt()
 
 	// get history by state
+
 	return llm.NewChatOption("", "", nil)
 }

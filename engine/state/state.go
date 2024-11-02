@@ -26,13 +26,15 @@ type State struct {
 
 	// call from engine and storage
 	onEventCallback func(event *events.Event)
+
+	metrics *Metrics
 }
 
 // TODO implement rag model
 func NewState(
 	sender *events.Channel,
 	task *task.Tasklet,
-	maxIterations uint64,
+	maxIterations uint,
 ) *State {
 	namespaces := make([]*namespace.Namespace, 0)
 	storages := make(map[string]*storage.Storage, 0)
@@ -107,6 +109,8 @@ func NewState(
 		}
 	}
 
+	metrics := NewMetrics(uint(maxIterations))
+
 	s.task = task
 	s.storages = storages
 	s.namespaces = namespaces
@@ -114,6 +118,7 @@ func NewState(
 	s.history = history
 	s.sender = sender
 	s.complete = complete
+	s.metrics = metrics
 
 	return s
 }
@@ -125,4 +130,32 @@ func (s *State) OnEvent(event *events.Event) {
 
 func (s *State) GetTask() *task.Tasklet {
 	return s.task
+}
+
+func (s *State) GetPrompt() string {
+	if s.task.Prompt != nil {
+		return *s.task.Prompt
+	}
+
+	return "prompt not set"
+}
+
+func (s *State) GetStorages() map[string]*storage.Storage {
+	return s.storages
+}
+
+func (s *State) GetNamespaces() []*namespace.Namespace {
+	return s.namespaces
+}
+
+func (s *State) GetMaxIteration() uint {
+	return s.metrics.maxStep
+}
+
+func (s *State) GetCurrentStep() uint {
+	return s.metrics.currentStep
+}
+
+func (s *State) GetChatHistory() uint {
+	return s.metrics.currentStep
 }

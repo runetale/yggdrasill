@@ -17,6 +17,7 @@ var prompt = "find the process consuming more ram"
 var generator = "openai://gpt-4@localhost:12321"
 var contextWindow uint32 = 8000
 var apiKey = ""
+var maxIterations = 0 // if set to 0, no limit iterations
 
 func main() {
 	// setup llm
@@ -45,7 +46,7 @@ func main() {
 
 	fmt.Printf("notch v0.0.1 🧠 gpt4-o @openai %s", tasklet.Name)
 
-	e := engine.NewEngine(tasklet, llm)
+	e := engine.NewEngine(tasklet, llm, uint(maxIterations))
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)

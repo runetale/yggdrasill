@@ -80,3 +80,8 @@ func (n *Namespace) GetStorages() []*storage.Storage {
 func (n *Namespace) GetStorageType() types.StorageType {
 	return n.storageDescriptor.storageType
 }
+
+// list of actions with action itself
+func (n *Namespace) GetActions() []action.Action {
+	return n.action.GetActionsList()
+}
