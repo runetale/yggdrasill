@@ -42,6 +42,17 @@ const (
 	GPT3Dot5TurboInstruct = "gpt-3.5-turbo-instruct"
 )
 
+type ToolCall struct {
+	id       string
+	function Function
+	theType  string
+}
+
+type Function struct {
+	name string
+	args string
+}
+
 type OpenAIClient struct {
 	model  string
 	client *openai.Client
@@ -146,8 +157,8 @@ func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string, error) {
 
 		in := &Invocation{
 			action:     tool.function.name,
-			attributes: attributes,
-			payload:    payload,
+			attributes: &attributes,
+			payload:    &payload,
 		}
 
 		invocations = append(invocations, in)

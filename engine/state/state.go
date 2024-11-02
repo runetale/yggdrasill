@@ -164,8 +164,13 @@ func (s *State) GetChatHistory(max int) []*llm.Message {
 		latest = s.history
 	}
 
+	if latest == nil {
+		return nil
+	}
+
 	history := []*llm.Message{}
 	for _, entry := range latest {
+		// agent messages
 		if entry.Response != nil {
 			history = append(history, &llm.Message{
 				MessageType: llm.AGETNT,
@@ -180,6 +185,7 @@ func (s *State) GetChatHistory(max int) []*llm.Message {
 			})
 		}
 
+		// feedback messages
 		var res string
 		if entry.Error != nil {
 			res = fmt.Sprintf("ERROR: %s", entry.Error.Error())

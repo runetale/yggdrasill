@@ -13,17 +13,6 @@ type Message struct {
 	Invocation  *Invocation
 }
 
-type ToolCall struct {
-	id       string
-	function Function
-	theType  string
-}
-
-type Function struct {
-	name string
-	args string
-}
-
 type ChatOption struct {
 	systemPrompt string
 	prompt       string

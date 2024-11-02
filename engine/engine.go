@@ -58,8 +58,8 @@ func (e *Engine) consumeEvent() {
 }
 
 func (e *Engine) automaton() {
-	// chat historyを生成
-	e.prepareAutomaton()
+	// prepare chat option
+	option := e.prepareAutomaton()
 
 	// チャネルに送信
 	// on_state_update
