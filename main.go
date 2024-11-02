@@ -31,7 +31,7 @@ func main() {
 		panic(err)
 	}
 
-	e := engine.NewEngine()
+	e := engine.NewEngine(tasklet, nil)
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 	go func() {

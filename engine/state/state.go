@@ -21,13 +21,13 @@ type State struct {
 	history    []*Execution // execed histories
 
 	// sent to engine.consumeEvent
-	sender   chan<- events.Channel
+	sender   *events.Channel
 	complete bool
 }
 
 // TODO implement rag model
 func NewState(
-	sender chan<- events.Channel,
+	sender *events.Channel,
 	task *task.Tasklet,
 	maxIterations uint64,
 ) *State {

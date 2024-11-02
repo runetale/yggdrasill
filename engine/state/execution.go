@@ -1,10 +1,14 @@
 package state
 
+import (
+	"github.com/runetale/notch/llm"
+)
+
 type Execution struct {
 	// unparsed response caused an error
 	Response *string
 	// parsed invocation
-	Invocation *Invocation
+	Invocation *llm.Invocation
 	result     *string
 	error      error
 }

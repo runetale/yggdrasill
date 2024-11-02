@@ -8,27 +8,31 @@ import (
 )
 
 type Engine struct {
-	// stateの更新を行う
-	Channel *events.Channel
-	Client  llm.LLMClinet
-	State   state.State
-	Task    task.Tasklet
+	channel *events.Channel
+	client  *llm.LLMClinet
+	state   *state.State
+	task    *task.Tasklet
 
 	closeCh chan struct{}
 	waitCh  chan struct{}
 }
 
-func NewEngine() *Engine {
+func NewEngine(t *task.Tasklet, c *llm.LLMClinet) *Engine {
 	channel := events.NewChannel()
+
+	s := state.NewState(channel, t, 0)
+
 	return &Engine{
-		Channel: channel,
+		channel: channel,
+		client:  c,
+		state:   s,
+		task:    t,
 	}
 }
 
 func (e *Engine) Start() {
 	go e.consumeEvent()
-
-	go e.Automaton()
+	go e.automaton()
 }
 
 func (e *Engine) Stop() {
@@ -44,7 +48,7 @@ func (e *Engine) Done() <-chan struct{} {
 func (e *Engine) consumeEvent() {
 	for {
 		// waiting receiver for each events
-		event := <-e.Channel.Receiver
+		event := <-e.channel.Receiver
 		switch event {
 		case events.MetricsUpdate:
 
@@ -52,7 +56,7 @@ func (e *Engine) consumeEvent() {
 	}
 }
 
-func (e *Engine) Automaton() {
+func (e *Engine) automaton() {
 	// chat historyを生成
 	e.prepareAutomaton()
 
@@ -72,11 +76,11 @@ func (e *Engine) Automaton() {
 	e.closeCh <- struct{}{}
 }
 
-func (e *Engine) prepareAutomaton() llm.ChatOption {
+func (e *Engine) prepareAutomaton() *llm.ChatOption {
 	// get system prompt by state
 
 	// get prompt by state
 
 	// get history by state
-	return *llm.NewChatOption("", "", []string{""})
+	return llm.NewChatOption("", "", []string{""})
 }

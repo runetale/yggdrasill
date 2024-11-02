@@ -1,4 +1,4 @@
-package state
+package llm
 
 type Invocation struct {
 	Action     string
