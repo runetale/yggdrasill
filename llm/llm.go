@@ -2,7 +2,7 @@
 package llm
 
 type LLMClientImpl interface {
-	Chat(*ChatOption) (*Invocation, error)
+	Chat(option *ChatOption) ([]*Invocation, string, error)
 }
 
 type LLMClinet struct {

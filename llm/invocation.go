@@ -1,9 +1,9 @@
 package llm
 
 type Invocation struct {
-	Action     string
-	Attributes map[string]string
-	Payload    string
+	action     string
+	attributes map[string]string
+	payload    string
 }
 
 func NewInvocation() *Invocation {

@@ -5,10 +5,10 @@ import (
 )
 
 type Execution struct {
-	// unparsed response caused an error
+	// llm response
 	Response *string
-	// parsed invocation
-	Invocation *llm.Invocation
+	// parsed llm response to invocation
+	invocation *llm.Invocation
 	result     *string
 	error      error
 }

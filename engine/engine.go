@@ -82,5 +82,5 @@ func (e *Engine) prepareAutomaton() *llm.ChatOption {
 	// get prompt by state
 
 	// get history by state
-	return llm.NewChatOption("", "", []string{""})
+	return llm.NewChatOption("", "", nil)
 }

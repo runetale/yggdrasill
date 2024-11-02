@@ -3,6 +3,8 @@ package llm
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -53,10 +55,43 @@ func NewOpenAI(model string, apikey string) LLMClientImpl {
 	}
 }
 
-func (o *OpenAI) Chat(option *ChatOption) (*Invocation, error) {
+func (o *OpenAI) Chat(option *ChatOption) ([]*Invocation, string, error) {
+	chathistory := []openai.ChatCompletionMessage{
+		{
+			Role:      openai.ChatMessageRoleSystem,
+			Content:   option.GetSystemPrompt(),
+			ToolCalls: nil,
+		},
+		{
+			Role:      openai.ChatMessageRoleUser,
+			Content:   option.GetPrompt(),
+			ToolCalls: nil,
+		},
+	}
+
+	// add chat history
+	for _, m := range option.GetHistory() {
+		switch m.messageType {
+		case AGETNT:
+			chathistory = append(chathistory, openai.ChatCompletionMessage{
+				Role:      openai.ChatMessageRoleAssistant,
+				Content:   m.response,
+				ToolCalls: nil,
+			})
+		case FEEDBACK:
+			chathistory = append(chathistory, openai.ChatCompletionMessage{
+				Role:      openai.ChatMessageRoleUser,
+				Content:   m.response,
+				ToolCalls: nil,
+			})
+		}
+	}
+
+	// TODO: function tools
 	req := openai.ChatCompletionRequest{
 		Model:    o.model,
-		Messages: []openai.ChatCompletionMessage{},
+		Messages: chathistory,
+		Tools:    nil,
 	}
 
 	resp, err := o.client.CreateChatCompletion(
@@ -64,9 +99,55 @@ func (o *OpenAI) Chat(option *ChatOption) (*Invocation, error) {
 		req,
 	)
 
+	// TODO: check rate limit
 	if err != nil {
-		return nil, err
+		fmt.Println("chat error %v", err)
+		return nil, "", err
 	}
 
-	return &resp, nil
+	// add invocations
+	choice := resp.Choices[0]
+	content := choice.Message.Content
+	toolCalls := make([]ToolCall, 0)
+	for _, tool := range choice.Message.ToolCalls {
+		toolCalls = append(toolCalls, ToolCall{
+			id: tool.ID,
+			function: Function{
+				name: tool.Function.Name,
+				args: tool.Function.Arguments,
+			},
+			theType: string(tool.Type),
+		})
+	}
+
+	invocations := make([]*Invocation, 0)
+	for _, tool := range toolCalls {
+		attributes := make(map[string]string, 0)
+		payload := ""
+
+		var result map[string]string
+		err := json.Unmarshal([]byte(tool.function.args), &result)
+		if err != nil {
+			fmt.Println("tool call parsing error %v", err)
+			return nil, "", err
+		}
+
+		for name, value := range result {
+			if name == "payload" {
+				payload = value
+			} else {
+				attributes[name] = value
+			}
+		}
+
+		in := &Invocation{
+			action:     tool.function.name,
+			attributes: attributes,
+			payload:    payload,
+		}
+
+		invocations = append(invocations, in)
+	}
+
+	return invocations, content, nil
 }
