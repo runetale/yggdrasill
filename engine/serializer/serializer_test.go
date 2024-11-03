@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/runetale/notch/llm"
+	"github.com/runetale/notch/storage"
+	"github.com/runetale/notch/types"
 )
 
 func Test_SerializeInvocation(t *testing.T) {
@@ -30,4 +32,10 @@ func Test_TryParse(t *testing.T) {
 		fmt.Printf("Action: %s, Attributes: %v, Payload: %v\n",
 			invocation.Action, invocation.Attributes, *invocation.Payload)
 	}
+}
+
+func Test_ParseStorage(t *testing.T) {
+	s := storage.NewStorage("Time Stroge", types.TIMER, nil)
+	fmt.Println("Time Storage Output:")
+	fmt.Println(paraseStorage(s))
 }

@@ -77,7 +77,7 @@ func (e *Engine) automaton() {
 		toolCalls, response := e.factory.Chat(option)
 		if toolCalls == nil {
 			// use our strategy
-			invocations = serializer.TryParse(&response)
+			invocations = serializer.TryParse(response)
 		} else {
 			// use native function call by model supports
 			invocations = toolCalls

@@ -12,6 +12,7 @@ import (
 	"github.com/runetale/notch/engine/action"
 	"github.com/runetale/notch/engine/state"
 	"github.com/runetale/notch/llm"
+	"github.com/runetale/notch/storage"
 )
 
 //go:embed actions.prompt
@@ -127,36 +128,17 @@ func actionsForState(state *state.State) (string, error) {
 	return builder.String(), nil
 }
 
-func invocation(inv *llm.Invocation) string {
-	var xml strings.Builder
-	xml.WriteString(fmt.Sprintf("<%s", inv.Action))
-
-	if inv.Attributes != nil {
-		for key, value := range inv.Attributes {
-			xml.WriteString(fmt.Sprintf(" %s=\"%s\"", key, value))
-		}
-	}
-
-	payload := ""
-	if inv.Payload != nil {
-		payload = *inv.Payload
-	}
-	xml.WriteString(fmt.Sprintf(">%s</%s>", payload, inv.Action))
-
-	return xml.String()
-}
-
 func SerializeInvocation(inv *llm.Invocation) *string {
-	invocation := invocation(inv)
+	invocation := parseInvocation(inv)
 	return &invocation
 }
 
-func SerializeAction(ac *action.Action) string {
-	return ""
+func SerializeAction(ac action.Action) string {
+	return parseAction(ac)
 }
 
-func SerializeStorage(ac *action.Action) string {
-	return ""
+func SerializeStorage(s *storage.Storage) string {
+	return paraseStorage(s)
 }
 
 func TryParse(raw string) []*llm.Invocation {

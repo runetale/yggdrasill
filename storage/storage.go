@@ -10,16 +10,16 @@ import (
 )
 
 type Entry struct {
-	time     time.Duration
-	complete bool // for Completion storage
-	data     string
+	Time     time.Time
+	Complete bool // for Completion storage
+	Data     string
 }
 
 func NewEntry(data string) *Entry {
 	return &Entry{
-		time:     time.Duration(time.Now().UnixNano()),
-		complete: false,
-		data:     data,
+		Time:     time.Now(),
+		Complete: false,
+		Data:     data,
 	}
 }
 
@@ -55,7 +55,7 @@ func (s *Storage) SortedEntries() {
 	}
 
 	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].time < entries[j].time
+		return entries[i].Time.UnixNano() < entries[j].Time.UnixNano()
 	})
 }
 
@@ -63,12 +63,33 @@ func (s *Storage) GetName() string {
 	return s.name
 }
 
+func (s *Storage) GetEntries() []*Entry {
+	values := []*Entry{}
+	for _, entry := range s.entry {
+		values = append(values, entry)
+	}
+	return values
+}
+
+func (s *Storage) GetEntryList() map[string]*Entry {
+	return s.entry
+}
+
+func (s *Storage) GetEntry(key string) (*Entry, bool) {
+	e, found := s.entry[key]
+	return e, found
+}
+
+func (s *Storage) IsEmpty() bool {
+	return len(s.entry) == 0
+}
+
 func (s *Storage) GetStorageType() types.StorageType {
 	return s.storageType
 }
 
-func (s *Storage) GetStartedAt() time.Duration {
-	return s.entry[STARTED_AT_TAG].time
+func (s *Storage) GetStartedAt() time.Time {
+	return s.entry[STARTED_AT_TAG].Time
 }
 
 func (s *Storage) OnEvent(event *events.Event) {
@@ -93,7 +114,7 @@ func (s *Storage) DelTagged(key string) {
 func (s *Storage) GetTagged(key string) string {
 	inner := s.entry[key]
 	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "get-tagged"))
-	return inner.data
+	return inner.Data
 }
 
 // for planning tasks
@@ -105,7 +126,7 @@ func (s *Storage) AddCompletion(data string) {
 
 	lastKey := keys[len(keys)-1]
 	lastValue := s.entry[lastKey]
-	lastValue.data = data
+	lastValue.Data = data
 	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "add-completion"))
 }
 
@@ -117,14 +138,14 @@ func (s *Storage) DelCompletion(pos int) {
 
 func (s *Storage) SetComplete(pos int) bool {
 	tag := strconv.Itoa(pos)
-	s.entry[tag].complete = true
+	s.entry[tag].Complete = true
 	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "set-complete"))
 	return true
 }
 
 func (s *Storage) SetInComplete(pos int) bool {
 	tag := strconv.Itoa(pos)
-	s.entry[tag].complete = false
+	s.entry[tag].Complete = false
 	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "set-incomplete"))
 	return true
 }

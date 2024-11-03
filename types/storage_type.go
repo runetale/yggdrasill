@@ -3,9 +3,9 @@ package types
 type StorageType string
 
 const (
-	UNTAGGED        = ""
-	TAGGED          = ""
-	CURRENTPREVIOUS = ""
-	COMPLETION      = ""
-	TIMER           = ""
+	UNTAGGED        = "untagged"
+	TAGGED          = "tagged"
+	CURRENTPREVIOUS = "current-previous"
+	COMPLETION      = "completion"
+	TIMER           = "timer"
 )
