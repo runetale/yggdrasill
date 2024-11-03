@@ -10,7 +10,6 @@ import (
 // all namespace's implement this interfaces
 type Action interface {
 	GetNamespace() types.NamespaceType
-	GetActionsList() []Action
 	Name() string
 	StorageType() types.StorageType
 	Predefined() *map[string]string

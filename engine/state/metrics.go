@@ -15,7 +15,7 @@ type Metrics struct {
 	validResponses uint
 	validActions   uint
 	successActions uint
-	errors         uint
+	errors         ErrorMetrics
 }
 
 func NewMetrics(maxStep uint) *Metrics {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/runetale/notch/engine/action"
 	"github.com/runetale/notch/engine/events"
 	"github.com/runetale/notch/engine/namespace"
 	"github.com/runetale/notch/llm"
@@ -29,7 +30,7 @@ type State struct {
 	onEventCallback func(event *events.Event)
 
 	// serialize callback function
-	SerializeInvocationCallback func(inv *llm.Invocation) *string
+	SerializeInvocation func(inv *llm.Invocation) *string
 
 	metrics *Metrics
 }
@@ -50,7 +51,7 @@ func NewState(
 	s := &State{
 		sender: sender,
 	}
-	s.SerializeInvocationCallback = serializationInvocation
+	s.SerializeInvocation = serializationInvocation
 
 	// get namespaces
 	using := task.GetUsing()
@@ -91,7 +92,7 @@ func NewState(
 
 	// set callback function
 	onEventCallback := func(event *events.Event) {
-		s.sender.Sender <- event
+		s.sender.Chan <- event
 	}
 	s.onEventCallback = onEventCallback
 
@@ -162,6 +163,19 @@ func (s *State) GetCurrentStep() uint {
 	return s.metrics.currentStep
 }
 
+// update history functions
+func (s *State) AddUnparsedResponseToHistory(response string, err string) {
+	s.history = append(s.history, NewExecution(&response, nil, nil, &err))
+}
+
+func (s *State) AddSuccessToHistory(invocation *llm.Invocation, result *string) {
+	s.history = append(s.history, NewExecution(nil, invocation, result, nil))
+}
+
+func (s *State) AddErrorToHistory(invocation *llm.Invocation, err string) {
+	s.history = append(s.history, NewExecution(nil, invocation, nil, &err))
+}
+
 // when this function called from `first chat“ and `on state update`
 func (s *State) ToChatHistory(max int) []*llm.Message {
 	var latest []*Execution
@@ -190,7 +204,7 @@ func (s *State) ToChatHistory(max int) []*llm.Message {
 				MessageType: llm.AGETNT,
 				// parse to invocation to string,
 				// to including the results of executing a "function call" when executing factory.Chat()
-				Response:   s.serializeInvocation(entry.Invocation),
+				Response:   s.SerializeInvocation(entry.Invocation),
 				Invocation: entry.Invocation,
 			})
 		}
@@ -198,7 +212,7 @@ func (s *State) ToChatHistory(max int) []*llm.Message {
 		// feedback messages
 		var res string
 		if entry.Error != nil {
-			res = fmt.Sprintf("ERROR: %s", entry.Error.Error())
+			res = fmt.Sprintf("ERROR: %s", *entry.Error)
 		} else if entry.Result != nil {
 			res = *entry.Result
 		} else {
@@ -215,6 +229,26 @@ func (s *State) ToChatHistory(max int) []*llm.Message {
 	return history
 }
 
-func (s *State) serializeInvocation(inv *llm.Invocation) *string {
-	return s.SerializeInvocationCallback(inv)
+// metrics functions
+func (s *State) IncrementEmptyMetrics() {
+	s.metrics.errors.emptyResponses += 1
+}
+
+func (s *State) IncrementUnparsedMetrics() {
+	s.metrics.errors.unparsedResonses += 1
+}
+
+func (s *State) IncrementValidMetrics() {
+	s.metrics.validResponses += 1
+}
+
+func (s *State) GetAciton(actionName string) action.Action {
+	for _, group := range s.namespaces {
+		for _, ac := range group.GetActions() {
+			if actionName == ac.Name() {
+				return ac
+			}
+		}
+	}
+	return nil
 }

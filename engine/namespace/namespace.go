@@ -29,6 +29,7 @@ type Namespace struct {
 	description string
 	stroages    []*storage.Storage
 	action      action.Action
+	actions     []action.Action
 	// description of storages
 	storageDescriptor *StorageDescriptor
 }
@@ -52,11 +53,15 @@ func NewNamespace(ns types.NamespaceType, functions []task.Function,
 
 	sd := NewStorageDescriptor(ac.Name(), ac.StorageType(), ac.Predefined())
 
+	actions := []action.Action{}
+	actions = append(actions, ac)
+
 	return &Namespace{
 		name:              ac.Name(),
 		description:       ac.Description(),
 		stroages:          nil,
 		action:            ac,
+		actions:           actions,
 		storageDescriptor: sd,
 	}
 }
@@ -83,5 +88,5 @@ func (n *Namespace) GetStorageType() types.StorageType {
 
 // list of actions with action itself
 func (n *Namespace) GetActions() []action.Action {
-	return n.action.GetActionsList()
+	return n.actions
 }

@@ -54,7 +54,7 @@ func (e *Engine) Done() <-chan struct{} {
 func (e *Engine) consumeEvent() {
 	for {
 		// waiting receiver for each events
-		event := <-e.channel.Receiver
+		event := <-e.channel.Chan
 		switch event.EventType() {
 		case events.ActionExecuted:
 
@@ -67,13 +67,11 @@ func (e *Engine) automaton() {
 		// prepare chat option
 		option := e.prepareAutomaton()
 
-		// request to chat
-		invocations := []*llm.Invocation{}
+		// update state event
+		e.OnUpdateState(option, false)
 
-		// NOTE:
-		// 1.toolCalls
-		// 2.response
-		// 1,2 iteration creates an invocation
+		// response from llm
+		invocations := []*llm.Invocation{}
 		toolCalls, response := e.factory.Chat(option)
 		if toolCalls == nil {
 			// use our strategy
@@ -83,17 +81,22 @@ func (e *Engine) automaton() {
 			invocations = toolCalls
 		}
 
-		// チャネルに送信
-		// on_state_update
+		if invocations == nil {
+			if response == "" {
+				e.onEmptyResponse()
+			} else {
+				e.onInvalidResponse(response)
+			}
+		} else {
+			e.onValidResponse()
+		}
 
-		// llmからresponseとtool_callsをもらう
-		// generator.chat
+		// parsing invocations
 
-		// もらったtool_callsのinvocationsからを使用して、コマンドを実行
-		// chat historyに追加
-		// チャネルに送信
+		for _, inv := range invocations {
+			e.state.GetAciton(inv.Action)
 
-		// 再度実行無限ループ
+		}
 
 		// Engineを修了する
 		e.Stop()
@@ -115,4 +118,41 @@ func (e *Engine) prepareAutomaton() *llm.ChatOption {
 	history := e.state.ToChatHistory(int(e.maxHistory))
 
 	return llm.NewChatOption(systemPrompt, prompt, history)
+}
+
+func (e *Engine) OnUpdateState(options *llm.ChatOption, refresh bool) {
+	if refresh {
+		// update prompt
+		sysp, err := serializer.DisplaySystemPrompt(e.state)
+		if err != nil {
+			panic(err)
+		}
+		options.UpdateSystemPrompt(sysp)
+
+		// update history
+		history := e.state.ToChatHistory(int(e.maxHistory))
+		options.UpdateHistroy(history)
+	}
+	e.sendEvent(events.NewEvent(events.StateUpdate, "engine", "on-update-state"))
+}
+
+func (e *Engine) sendEvent(events *events.Event) {
+	e.state.OnEvent(events)
+}
+
+func (e *Engine) onInvalidResponse(reponse string) {
+	e.state.IncrementUnparsedMetrics()
+	e.state.AddUnparsedResponseToHistory(reponse, "no effective solution found, follow the instructions to correct this")
+	e.state.OnEvent(events.NewEvent(events.InvalidResponse, "engine", "on-invalid-response"))
+
+}
+
+func (e *Engine) onEmptyResponse() {
+	e.state.IncrementEmptyMetrics()
+	e.state.AddUnparsedResponseToHistory("", "return to empty response")
+	e.state.OnEvent(events.NewEvent(events.EmptyResponse, "engine", "on-empty-response"))
+}
+
+func (e *Engine) onValidResponse() {
+	e.state.IncrementValidMetrics()
 }

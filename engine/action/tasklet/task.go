@@ -20,14 +20,12 @@ type Tasklet struct {
 	tool             string
 	storageType      types.StorageType
 	predefined       *map[string]string
-	actionsList      []action.Action
 }
 
 func NewTasklet() action.Action {
 	return &Tasklet{
 		storageType: types.UNTAGGED,
 		predefined:  nil,
-		actionsList: nil,
 	}
 }
 
@@ -42,10 +40,6 @@ func (s *Tasklet) ExamplePayload() *string {
 
 func (s *Tasklet) ExampleAttributes() map[string]string {
 	return nil
-}
-
-func (s *Tasklet) GetActionsList() []action.Action {
-	return s.actionsList
 }
 
 func (s *Tasklet) Predefined() *map[string]string {

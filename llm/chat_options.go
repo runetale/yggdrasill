@@ -38,3 +38,11 @@ func (c *ChatOption) GetPrompt() string {
 func (c *ChatOption) GetHistory() []*Message {
 	return c.history
 }
+
+func (c *ChatOption) UpdateSystemPrompt(prompt string) {
+	c.systemPrompt = prompt
+}
+
+func (c *ChatOption) UpdateHistroy(histroy []*Message) {
+	c.history = histroy
+}

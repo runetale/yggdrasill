@@ -159,11 +159,7 @@ func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string) {
 			}
 		}
 
-		in := &Invocation{
-			Action:     tool.function.name,
-			Attributes: attributes,
-			Payload:    &payload,
-		}
+		in := NewInvocation(tool.function.name, attributes, &payload)
 
 		invocations = append(invocations, in)
 	}

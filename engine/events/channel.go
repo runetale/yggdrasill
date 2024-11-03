@@ -3,14 +3,16 @@ package events
 type EventType string
 
 const (
-	MetricsUpdate  EventType = "metrics_update"
-	StorageUpdate  EventType = "storage_update"
-	StateUpdate    EventType = "state_update"
-	InvalidUpdate  EventType = "invaild_update"
-	InvalidAction  EventType = "invalid_action"
-	ActionTimeOut  EventType = "action_timeout"
-	ActionExecuted EventType = "aciton_executed"
-	TaskComplete   EventType = "task_comlete"
+	MetricsUpdate   EventType = "metrics_update"
+	StorageUpdate   EventType = "storage_update"
+	StateUpdate     EventType = "state_update"
+	InvalidUpdate   EventType = "invaild_update"
+	InvalidAction   EventType = "invalid_action"
+	InvalidResponse EventType = "invalid_response"
+	ActionTimeOut   EventType = "action_timeout"
+	ActionExecuted  EventType = "aciton_executed"
+	TaskComplete    EventType = "task_comlete"
+	EmptyResponse   EventType = "empty_response"
 )
 
 type Event struct {
@@ -32,14 +34,12 @@ func (e *Event) EventType() EventType {
 }
 
 type Channel struct {
-	Sender   chan<- *Event
-	Receiver <-chan *Event
+	Chan chan *Event
 }
 
 func NewChannel() *Channel {
 	ch := make(chan *Event)
 	return &Channel{
-		Sender:   ch,
-		Receiver: ch,
+		Chan: ch,
 	}
 }

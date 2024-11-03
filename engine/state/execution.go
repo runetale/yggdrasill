@@ -11,9 +11,19 @@ type Execution struct {
 	// parsed llm response to invocation
 	Invocation *llm.Invocation
 	Result     *string
-	Error      error
+	Error      *string
 }
 
-func NewExecution() *Execution {
-	return &Execution{}
+func NewExecution(
+	response *string,
+	invocation *llm.Invocation,
+	result *string,
+	err *string,
+) *Execution {
+	return &Execution{
+		Response:   response,
+		Invocation: invocation,
+		Result:     result,
+		Error:      err,
+	}
 }
