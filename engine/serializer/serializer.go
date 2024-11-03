@@ -98,7 +98,7 @@ func serializeAction(ac action.Action) string {
 
 	// if existing payload by aciton
 	if payload := ac.ExamplePayload(); payload != nil {
-		builder.WriteString(fmt.Sprintf(">%s</%s>", payload, ac.Name()))
+		builder.WriteString(fmt.Sprintf(">%s</%s>", *payload, ac.Name()))
 	} else {
 		builder.WriteString("/>")
 	}
@@ -127,13 +127,28 @@ func actionsForState(state *state.State) (string, error) {
 	return builder.String(), nil
 }
 
-// try_parseの実装から入る
-func TryParse(raw *string) []*llm.Invocation {
-	return nil
+func invocation(inv *llm.Invocation) string {
+	var xml strings.Builder
+	xml.WriteString(fmt.Sprintf("<%s", inv.Action))
+
+	if inv.Attributes != nil {
+		for key, value := range inv.Attributes {
+			xml.WriteString(fmt.Sprintf(" %s=\"%s\"", key, value))
+		}
+	}
+
+	payload := ""
+	if inv.Payload != nil {
+		payload = *inv.Payload
+	}
+	xml.WriteString(fmt.Sprintf(">%s</%s>", payload, inv.Action))
+
+	return xml.String()
 }
 
 func SerializeInvocation(inv *llm.Invocation) *string {
-	return nil
+	invocation := invocation(inv)
+	return &invocation
 }
 
 func SerializeAction(ac *action.Action) string {
@@ -142,4 +157,36 @@ func SerializeAction(ac *action.Action) string {
 
 func SerializeStorage(ac *action.Action) string {
 	return ""
+}
+
+func TryParse(raw string) []*llm.Invocation {
+	ptr := raw
+	var parsedInvocations []*llm.Invocation
+	uniqueMap := make(map[string]bool)
+
+	for {
+		openIdx := strings.Index(ptr, "<")
+		if openIdx == -1 {
+			break
+		}
+
+		ptr = ptr[openIdx:]
+
+		parsedBlock := tryParseBlock(ptr)
+		if parsedBlock.Processed == 0 {
+			break
+		}
+
+		for _, inv := range parsedBlock.Invocations {
+			uniqueKey := fmt.Sprintf("%s-%v-%v", inv.Action, inv.Attributes, inv.Payload)
+			if !uniqueMap[uniqueKey] {
+				uniqueMap[uniqueKey] = true
+				parsedInvocations = append(parsedInvocations, inv)
+			}
+		}
+
+		ptr = ptr[parsedBlock.Processed:]
+	}
+
+	return parsedInvocations
 }
