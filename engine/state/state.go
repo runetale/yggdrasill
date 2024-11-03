@@ -24,7 +24,7 @@ type State struct {
 
 	// sent to engine.consumeEvent
 	sender   *events.Channel
-	complete bool
+	complete chan bool
 
 	// call from engine and storage
 	onEventCallback func(event *events.Event)
@@ -46,7 +46,6 @@ func NewState(
 	storages := make(map[string]*storage.Storage, 0)
 	variables := make(map[string]string, 0)
 	history := make([]*Execution, 0)
-	complete := false
 
 	s := &State{
 		sender: sender,
@@ -125,10 +124,17 @@ func NewState(
 	s.variables = variables
 	s.history = history
 	s.sender = sender
-	s.complete = complete
 	s.metrics = metrics
 
 	return s
+}
+
+func (s *State) Complete() <-chan bool {
+	return s.complete
+}
+
+func (s *State) Close() {
+	s.complete <- true
 }
 
 // called from engine
@@ -236,6 +242,10 @@ func (s *State) IncrementEmptyMetrics() {
 
 func (s *State) IncrementUnparsedMetrics() {
 	s.metrics.errors.unparsedResonses += 1
+}
+
+func (s *State) IncrementUnknownMetrics() {
+	s.metrics.errors.unknownActions += 1
 }
 
 func (s *State) IncrementValidMetrics() {

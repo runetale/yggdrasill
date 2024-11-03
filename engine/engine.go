@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"fmt"
+
 	"github.com/runetale/notch/engine/events"
 	"github.com/runetale/notch/engine/serializer"
 	"github.com/runetale/notch/engine/state"
@@ -84,22 +86,35 @@ func (e *Engine) automaton() {
 		if invocations == nil {
 			if response == "" {
 				e.onEmptyResponse()
+				continue
 			} else {
 				e.onInvalidResponse(response)
+				continue
 			}
 		} else {
 			e.onValidResponse()
 		}
 
 		// parsing invocations
-
 		for _, inv := range invocations {
-			e.state.GetAciton(inv.Action)
+			// found action
+			ac := e.state.GetAciton(inv.Action)
+			if ac == nil {
+				e.onInvalidAction(inv, fmt.Sprintf("cannot found action %s", inv.Action))
+				continue
+			}
+
+			// validate actions
 
 		}
 
-		// Engineを修了する
-		e.Stop()
+		// update state
+
+		// terminated engine process
+		comp := <-e.state.Complete()
+		if comp {
+			e.Stop()
+		}
 	}
 }
 
@@ -144,7 +159,6 @@ func (e *Engine) onInvalidResponse(reponse string) {
 	e.state.IncrementUnparsedMetrics()
 	e.state.AddUnparsedResponseToHistory(reponse, "no effective solution found, follow the instructions to correct this")
 	e.state.OnEvent(events.NewEvent(events.InvalidResponse, "engine", "on-invalid-response"))
-
 }
 
 func (e *Engine) onEmptyResponse() {
@@ -155,4 +169,10 @@ func (e *Engine) onEmptyResponse() {
 
 func (e *Engine) onValidResponse() {
 	e.state.IncrementValidMetrics()
+}
+
+func (e *Engine) onInvalidAction(inv *llm.Invocation, err string) {
+	e.state.IncrementUnknownMetrics()
+	e.state.AddErrorToHistory(inv, err)
+	e.state.OnEvent(events.NewEvent(events.InvalidAction, "engine", "on-invalid-action"))
 }
