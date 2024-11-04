@@ -1,7 +1,12 @@
 package shell
 
 import (
+	"bytes"
+	"context"
+	"fmt"
+	"log"
 	"os"
+	"os/exec"
 	"time"
 
 	"github.com/runetale/notch/engine/action"
@@ -40,7 +45,33 @@ func (s *Shell) Description() string {
 }
 
 func (s *Shell) Run(storage *storage.Storage, attributes map[string]string, payload string) string {
-	return "run"
+	command := payload
+	log.Printf("Executing command: %s", command)
+
+	cmd := exec.CommandContext(context.Background(), "/bin/sh", "-c", command)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		log.Printf("Command error: %v", err)
+		exitCode := cmd.ProcessState.ExitCode()
+		return formatOutput(stdout.String(), stderr.String(), exitCode)
+	}
+
+	return formatOutput(stdout.String(), stderr.String(), 0)
+}
+
+func formatOutput(stdout, stderr string, exitCode int) string {
+	result := stdout
+	if stderr != "" {
+		result += fmt.Sprintf("\nSTDERR: %s\n", stderr)
+	}
+	if exitCode != 0 {
+		result += fmt.Sprintf("\nEXIT CODE: %d", exitCode)
+	}
+	return result
 }
 
 func (s *Shell) Timeout() *time.Duration {
