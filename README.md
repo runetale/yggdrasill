@@ -8,7 +8,7 @@
 <hr/>
 
 <p align="center">
-    <img src="assets/logo.png" alt="notch" width="100" height="100" align='center'/>
+    <img src="assets/logo.png" alt="notch" width="300" height="300" align='center'/>
 </p>
 
 **Notch is an Automaton tool that executes defined tasks or tasks customized and created by the user through LLM.**
