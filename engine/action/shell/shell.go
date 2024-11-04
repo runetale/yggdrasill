@@ -87,8 +87,8 @@ func (s *Shell) ExampleAttributes() map[string]string {
 	return nil
 }
 
-func (s *Shell) RequiredVariables() []string {
-	return []string{""}
+func (s *Shell) RequiredVariables() []*string {
+	return nil
 }
 
 func (s *Shell) RequiresUserConfirmation() bool {

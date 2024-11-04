@@ -71,7 +71,6 @@ func getFromYamlFile(filePath string) (*Task, error) {
 		return nil, err
 	}
 
-	fmt.Println(filePath)
 	var tasklet Task
 	err = yaml.Unmarshal(data, &tasklet)
 	if err != nil {
@@ -132,9 +131,6 @@ func (t *Task) GetGuidance() []*string {
 
 // user defined yaml tasks
 func (t *Task) GetFunctions() []*Function {
-	fs := t.Functions
-	log.Println("Called GetFunctions")
-	log.Println(fs)
 	return t.Functions
 }
 

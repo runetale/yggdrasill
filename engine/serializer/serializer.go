@@ -22,16 +22,16 @@ var actionPrompt string
 var systemPrompt string
 
 type System struct {
-	SystemPrompt     string `xml:"system_prompt"`
-	Storages         string `xml:"storages"`
-	Iterations       string `xml:"iterations"`
-	AvailableActions string `xml:"available_actions"`
-	Guidance         string `xml:"guidance"`
+	SystemPrompt     string
+	Storages         string
+	Iterations       string
+	AvailableActions string
+	Guidance         string
 }
 
 func DisplaySystemPrompt(state *state.State) (string, error) {
 	// input data to template
-	tmpl, err := template.New("prompt").ParseFiles(systemPrompt)
+	tmpl, err := template.New("prompt").Parse(systemPrompt)
 	if err != nil {
 		return "", err
 	}
@@ -52,7 +52,7 @@ func DisplaySystemPrompt(state *state.State) (string, error) {
 	// guidance
 	var formattedGuidance []string
 	for _, s := range task.GetGuidance() {
-		formattedGuidance = append(formattedGuidance, fmt.Sprintf("- %s", s))
+		formattedGuidance = append(formattedGuidance, fmt.Sprintf("- %s", *s))
 	}
 	guidance := strings.Join(formattedGuidance, "\n")
 
@@ -77,12 +77,23 @@ func DisplaySystemPrompt(state *state.State) (string, error) {
 		Guidance:         guidance,
 	}
 
+	fmt.Println("----------------------systemprompt--------------")
+	fmt.Println(data.SystemPrompt)
+	fmt.Println("----------------------storages------------------")
+	fmt.Println(data.Storages)
+	fmt.Println("----------------------iterations----------------")
+	fmt.Println(data.Iterations)
+	fmt.Println("----------------------available actions---------")
+	fmt.Println(data.AvailableActions)
+	fmt.Println("----------------------guidance------------------")
+	fmt.Println(data.Guidance)
+	fmt.Println("----------------------end-----------------------")
+
 	var output bytes.Buffer
 	if err := tmpl.Execute(&output, data); err != nil {
 		return "", err
 	}
 
-	// 結果を出力
 	return output.String(), nil
 }
 

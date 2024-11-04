@@ -71,21 +71,25 @@ func exec(ctx context.Context, args []string) error {
 
 	e := engine.NewEngine(tasklet, factory, uint(notchArgs.maxIterations))
 
+	// start
+	go e.Start()
+
 	interrupt := make(chan os.Signal, 1)
+	ch := make(chan struct{})
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		for {
 			select {
 			case <-interrupt:
+				close(ch)
 				return
 			case <-e.Done():
+				close(ch)
 				return
 			}
 		}
 	}()
-
-	// start
-	go e.Start()
+	<-ch
 
 	return nil
 }

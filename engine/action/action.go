@@ -16,7 +16,7 @@ type Action interface {
 	Description() string
 	Run(s *storage.Storage, attributes map[string]string, payload string) string
 	Timeout() *time.Duration
-	RequiredVariables() []string // retrieved when variables such as `$SSH_HOST` are set
+	RequiredVariables() []*string // retrieved when variables such as `$SSH_HOST` are set
 	RequiresUserConfirmation() bool
 	ExamplePayload() *string
 	ExampleAttributes() map[string]string

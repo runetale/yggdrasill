@@ -63,6 +63,7 @@ func (e *Engine) Done() <-chan struct{} {
 // for only display
 func (e *Engine) consumeEvent() {
 	for {
+		fmt.Println("[start consume event]")
 		// waiting receiver for each events
 		event := <-e.channel.Chan
 		switch event.EventType() {
@@ -76,6 +77,7 @@ func (e *Engine) automaton() {
 	for {
 		// prepare chat option
 		option := e.prepareAutomaton()
+		fmt.Println("[start automaton]")
 
 		// update state event
 		e.OnUpdateState(option, false)
@@ -166,6 +168,7 @@ func (e *Engine) automaton() {
 		// terminated engine process
 		comp := <-e.state.Complete()
 		if comp {
+			fmt.Println("[finished engine complete]")
 			e.Stop()
 		}
 	}
@@ -203,7 +206,7 @@ func (e *Engine) prepareAutomaton() *llm.ChatOption {
 	// get system prompt by state
 	systemPrompt, err := serializer.DisplaySystemPrompt(e.state)
 	if err != nil {
-
+		log.Fatalf("prepare automaton error %s", err.Error())
 	}
 
 	// get prompt by state
@@ -220,7 +223,7 @@ func (e *Engine) OnUpdateState(options *llm.ChatOption, refresh bool) {
 		// update prompt
 		sysprompt, err := serializer.DisplaySystemPrompt(e.state)
 		if err != nil {
-			panic(err)
+			log.Printf("error on update state %s", err.Error())
 		}
 		options.UpdateSystemPrompt(sysprompt)
 

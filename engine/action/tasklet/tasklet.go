@@ -66,8 +66,8 @@ func (s *Tasklet) Timeout() *time.Duration {
 	return nil
 }
 
-func (s *Tasklet) RequiredVariables() []string {
-	return []string{""}
+func (s *Tasklet) RequiredVariables() []*string {
+	return nil
 }
 
 func (s *Tasklet) RequiresUserConfirmation() bool {

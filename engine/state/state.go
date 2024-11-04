@@ -74,6 +74,9 @@ func NewState(
 	// set variables
 	for _, o := range namespaces {
 		required := o.GetAction().RequiredVariables()
+		if required == nil {
+			continue
+		}
 		log.Printf("actions %s requires %v\n", o.GetAction().Name(), required)
 		for _, vn := range required {
 			exp := fmt.Sprintf("$%s", vn)
