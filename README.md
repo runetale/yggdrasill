@@ -1,8 +1,8 @@
 <p align="center">
   <small>Join the project community on our server!</small>
   <br/><br/>
-  <a href="https://discord.gg/" target="_blank" title="Join our community!">
-    <img src="https://dcbadge.limes.pink/api/server/https://discord.gg"/>
+  <a href="https://discord.gg/tpAz2MTA" target="_blank" title="Join our community!">
+    <img src="https://dcbadge.limes.pink/api/server/https://discord.gg/tpAz2MTA"/>
   </a>
 </p>
 <hr/>
