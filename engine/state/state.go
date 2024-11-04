@@ -252,6 +252,12 @@ func (s *State) IncrementValidMetrics() {
 	s.metrics.validResponses += 1
 }
 
+func (s *State) IncrementValidActionsMetrics() {
+	s.metrics.validActions += 1
+}
+
+// calling invocation.action from engine
+// get the namespace of the specified action name
 func (s *State) GetAciton(actionName string) action.Action {
 	for _, group := range s.namespaces {
 		for _, ac := range group.GetActions() {

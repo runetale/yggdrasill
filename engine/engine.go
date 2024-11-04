@@ -105,6 +105,20 @@ func (e *Engine) automaton() {
 			}
 
 			// validate actions
+			err := inv.ValidateAction(ac)
+			if err != nil {
+				e.onInvalidAction(inv, fmt.Sprintf("invalid action %s", inv.Action))
+				continue
+			}
+
+			// update metrics
+			e.onValidAction()
+
+			// timeout
+
+			// y or n
+
+			// exec
 
 		}
 
@@ -169,6 +183,10 @@ func (e *Engine) onEmptyResponse() {
 
 func (e *Engine) onValidResponse() {
 	e.state.IncrementValidMetrics()
+}
+
+func (e *Engine) onValidAction() {
+	e.state.IncrementValidActionsMetrics()
 }
 
 func (e *Engine) onInvalidAction(inv *llm.Invocation, err string) {
