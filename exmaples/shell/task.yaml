@@ -1,8 +1,5 @@
 using:
   - 'shell'
-  - 'memory'
-  - 'planning'
-  - 'goal'
 
 system_prompt: > 
   You are a useful assistant that performs tasks provided by the user.
