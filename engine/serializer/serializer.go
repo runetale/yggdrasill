@@ -51,7 +51,7 @@ func DisplaySystemPrompt(state *state.State) (string, error) {
 
 	// guidance
 	var formattedGuidance []string
-	for _, s := range task.Guidance {
+	for _, s := range task.GetGuidance() {
 		formattedGuidance = append(formattedGuidance, fmt.Sprintf("- %s", s))
 	}
 	guidance := strings.Join(formattedGuidance, "\n")

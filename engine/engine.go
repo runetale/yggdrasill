@@ -1,8 +1,14 @@
 package engine
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"log"
+	"strings"
+	"time"
 
+	"github.com/runetale/notch/engine/action"
 	"github.com/runetale/notch/engine/events"
 	"github.com/runetale/notch/engine/serializer"
 	"github.com/runetale/notch/engine/state"
@@ -15,12 +21,13 @@ type Engine struct {
 	factory    *llm.LLMFactory
 	state      *state.State
 	maxHistory uint
-	task       *task.Tasklet
+	task       *task.Task
+	timeout    *time.Duration
 
 	waitCh chan struct{}
 }
 
-func NewEngine(t *task.Tasklet, c *llm.LLMFactory, maxIterations uint) *Engine {
+func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint) *Engine {
 	channel := events.NewChannel()
 
 	serializationInvocationCb := func(inv *llm.Invocation) *string {
@@ -35,6 +42,7 @@ func NewEngine(t *task.Tasklet, c *llm.LLMFactory, maxIterations uint) *Engine {
 		maxHistory: t.GetMaxHistory(),
 		state:      s,
 		task:       t,
+		timeout:    s.GetTask().GetTimeout(),
 		waitCh:     make(chan struct{}),
 	}
 }
@@ -75,25 +83,25 @@ func (e *Engine) automaton() {
 		// response from llm
 		invocations := []*llm.Invocation{}
 		toolCalls, response := e.factory.Chat(option)
+		// use our strategy
 		if toolCalls == nil {
-			// use our strategy
 			invocations = serializer.TryParse(response)
-		} else {
-			// use native function call by model supports
-			invocations = toolCalls
 		}
+		// use native function call by model supports
+		invocations = toolCalls
 
+		// return to llm response was null
 		if invocations == nil {
 			if response == "" {
 				e.onEmptyResponse()
 				continue
-			} else {
-				e.onInvalidResponse(response)
-				continue
 			}
-		} else {
-			e.onValidResponse()
+			e.onInvalidResponse(response)
+			continue
 		}
+
+		// update metrics
+		e.onValidResponse()
 
 		// parsing invocations
 		for _, inv := range invocations {
@@ -101,28 +109,59 @@ func (e *Engine) automaton() {
 			ac := e.state.GetAciton(inv.Action)
 			if ac == nil {
 				e.onInvalidAction(inv, fmt.Sprintf("cannot found action %s", inv.Action))
-				continue
+				break
 			}
 
 			// validate actions
 			err := inv.ValidateAction(ac)
 			if err != nil {
 				e.onInvalidAction(inv, fmt.Sprintf("invalid action %s", inv.Action))
-				continue
+				break
 			}
 
 			// update metrics
 			e.onValidAction()
 
 			// timeout
+			timout := e.GetTimeout(ac)
+
+			exec := true
 
 			// y or n
+			if ac.RequiresUserConfirmation() {
+				log.Println("Warning: user confirmation required")
+				start := time.Now()
+				inp := "nope"
+
+				for inp != "" && inp != "n" && inp != "y" {
+					fmt.Println("invocation by y or n")
+					fmt.Printf("%v\n", inv)
+					inp = e.task.GetUserInput(fmt.Sprintf("%s [Yn] ", inv.FunctionCallString()))
+					inp = strings.ToLower(inp)
+				}
+
+				if inp == "n" {
+					log.Println("Warning: invocation rejected by user")
+					elapsed := time.Since(start)
+					h := fmt.Sprintf("invocation rejected. Elapsed time: %v\n", elapsed)
+					e.onExecutedErrorAction(inv, &h, elapsed)
+					exec = false
+				}
+			}
 
 			// exec
-
+			if exec {
+				start := time.Now()
+				result, err := e.timeoutRun(ac, timout, inv.Attributes, *inv.Payload)
+				if err != nil {
+					e.onTimeoutAction(inv, time.Since(start))
+				}
+				e.onExecutedSuccessAction(inv, &result, time.Since(start))
+			}
 		}
 
 		// update state
+		e.OnUpdateState(option, true)
 
 		// terminated engine process
 		comp := <-e.state.Complete()
@@ -130,6 +169,33 @@ func (e *Engine) automaton() {
 			e.Stop()
 		}
 	}
+}
+
+func (e *Engine) timeoutRun(ac action.Action, timeout time.Duration, attributes map[string]string, payload string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	result := make(chan string, 1)
+	go func() {
+		result <- ac.Run(e.state.GetStorage(ac.Name()), attributes, payload)
+	}()
+
+	select {
+	case ret := <-result:
+		return ret, nil
+	case <-ctx.Done():
+		return "", errors.New("operation timed out")
+	}
+}
+
+func (e *Engine) GetTimeout(ac action.Action) time.Duration {
+	var defaultTimeout = time.Hour * 24 * 30 // デフォルトは1ヶ月 (30日)
+	if actionTimeout := ac.Timeout(); actionTimeout != nil {
+		return *actionTimeout
+	} else if e.timeout != nil {
+		return *e.timeout
+	}
+	return defaultTimeout
 }
 
 func (e *Engine) prepareAutomaton() *llm.ChatOption {
@@ -152,11 +218,11 @@ func (e *Engine) prepareAutomaton() *llm.ChatOption {
 func (e *Engine) OnUpdateState(options *llm.ChatOption, refresh bool) {
 	if refresh {
 		// update prompt
-		sysp, err := serializer.DisplaySystemPrompt(e.state)
+		sysprompt, err := serializer.DisplaySystemPrompt(e.state)
 		if err != nil {
 			panic(err)
 		}
-		options.UpdateSystemPrompt(sysp)
+		options.UpdateSystemPrompt(sysprompt)
 
 		// update history
 		history := e.state.ToChatHistory(int(e.maxHistory))
@@ -193,4 +259,22 @@ func (e *Engine) onInvalidAction(inv *llm.Invocation, err string) {
 	e.state.IncrementUnknownMetrics()
 	e.state.AddErrorToHistory(inv, err)
 	e.state.OnEvent(events.NewEvent(events.InvalidAction, "engine", "on-invalid-action"))
+}
+
+func (e *Engine) onExecutedErrorAction(inv *llm.Invocation, err *string, start time.Duration) {
+	e.state.IncrementErroredActionMetrics()
+	e.state.AddErrorToHistory(inv, *err)
+	e.state.OnEvent(events.NewEvent(events.ActionExecuted, "engine", "on-executed-error-action"))
+}
+
+func (e *Engine) onExecutedSuccessAction(inv *llm.Invocation, result *string, start time.Duration) {
+	e.state.IncrementSuccessActionMetrics()
+	e.state.AddSuccessToHistory(inv, result)
+	e.state.OnEvent(events.NewEvent(events.ActionExecuted, "engine", "on-executed-success-action"))
+}
+
+func (e *Engine) onTimeoutAction(inv *llm.Invocation, start time.Duration) {
+	e.state.IncrementTimeoutActionMetrics()
+	e.state.AddErrorToHistory(inv, "action time out")
+	e.state.OnEvent(events.NewEvent(events.ActionTimeOut, "engine", "on-timeout-action"))
 }

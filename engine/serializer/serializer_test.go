@@ -1,7 +1,7 @@
 package serializer
 
 import (
-	"fmt"
+	"log"
 	"testing"
 
 	"github.com/runetale/notch/llm"
@@ -29,13 +29,13 @@ func Test_TryParse(t *testing.T) {
 	invocations := TryParse(raw)
 
 	for _, invocation := range invocations {
-		fmt.Printf("Action: %s, Attributes: %v, Payload: %v\n",
+		log.Printf("Action: %s, Attributes: %v, Payload: %v\n",
 			invocation.Action, invocation.Attributes, *invocation.Payload)
 	}
 }
 
 func Test_ParseStorage(t *testing.T) {
 	s := storage.NewStorage("Time Stroge", types.TIMER, nil)
-	fmt.Println("Time Storage Output:")
-	fmt.Println(paraseStorage(s))
+	log.Println("Time Storage Output:")
+	log.Println(paraseStorage(s))
 }

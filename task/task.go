@@ -1,3 +1,4 @@
+// this packege provide user defined task values
 package task
 
 import (
@@ -8,35 +9,37 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
 
-type Tasklet struct {
-	Name         string
-	Folder       string
-	Using        []*string  `yaml:"using"`
-	SystemPrompt string     `yaml:"system_prompt"`
-	Prompt       *string    `yaml:"prompt"`
-	Guidance     []string   `yaml:"guidance"`
-	Functions    []Function `yaml:"functions"`
+type Task struct {
+	name         string
+	folder       string
+	timeout      *time.Duration
+	using        []*string  `yaml:"using"`
+	systemPrompt string     `yaml:"system_prompt"`
+	prompt       *string    `yaml:"prompt"`
+	guidance     []string   `yaml:"guidance"`
+	functions    []Function `yaml:"functions"`
 }
 
 type Function struct {
-	Name        string   `yaml:"name"`
-	Description string   `yaml:"description"`
-	Actions     []Action `yaml:"actions"`
+	name        string   `yaml:"name"`
+	description string   `yaml:"description"`
+	actions     []Action `yaml:"actions"`
 }
 
 type Action struct {
-	Name           string `yaml:"name"`
-	Description    string `yaml:"description"`
-	Tool           string `yaml:"tool"`
-	MaxShownOutput int    `yaml:"max_shown_output"`
-	ExamplePayload string `yaml:"example_payload,omitempty"`
+	name           string `yaml:"name"`
+	description    string `yaml:"description"`
+	tool           string `yaml:"tool"`
+	maxShownOutput int    `yaml:"max_shown_output"`
+	examplePayload string `yaml:"example_payload,omitempty"`
 }
 
-func GetFromPath(path string) (*Tasklet, error) {
+func GetFromPath(path string) (*Task, error) {
 	info, err := os.Stat(path)
 	if err != nil {
 		return nil, err
@@ -48,7 +51,7 @@ func GetFromPath(path string) (*Tasklet, error) {
 	return getFromYamlFile(path)
 }
 
-func getFromDir(path string) (*Tasklet, error) {
+func getFromDir(path string) (*Task, error) {
 	filePath := filepath.Join(path, "task.yaml")
 	_, err := os.Stat(filePath)
 	if err == nil {
@@ -61,14 +64,14 @@ func getFromDir(path string) (*Tasklet, error) {
 	return nil, err
 }
 
-func getFromYamlFile(filePath string) (*Tasklet, error) {
+func getFromYamlFile(filePath string) (*Task, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatalf("can't read file %v", err)
 		return nil, err
 	}
 
-	var tasklet Tasklet
+	var tasklet Task
 	err = yaml.Unmarshal(data, &tasklet)
 	if err != nil {
 		log.Fatalf("parsing yaml error %v", err)
@@ -77,8 +80,8 @@ func getFromYamlFile(filePath string) (*Tasklet, error) {
 
 	dir := filepath.Dir(filePath)
 	dirName := filepath.Base(dir)
-	tasklet.Name = dirName
-	tasklet.Folder = filePath
+	tasklet.name = dirName
+	tasklet.folder = filePath
 
 	return &tasklet, nil
 
@@ -86,51 +89,55 @@ func getFromYamlFile(filePath string) (*Tasklet, error) {
 
 // userPromptが無ければ入力を受け付ける
 // Promptが設定されていない場合はuserからのpromptを設定する
-func (t *Tasklet) Setup(userPrompt *string) error {
+func (t *Task) Setup(userPrompt *string) error {
 	if userPrompt == nil {
 		input := t.GetUserInput("enter task > ")
-		t.Prompt = &input
+		t.prompt = &input
 		return nil
 	}
 
-	if t.Prompt == nil {
-		t.Prompt = userPrompt
+	if t.prompt == nil {
+		t.prompt = userPrompt
 		return nil
 	}
 
 	return errors.New("Setup failed")
 }
 
-func (t *Tasklet) GetUsing() []*string {
-	return t.Using
+func (t *Task) GetUsing() []*string {
+	return t.using
 }
 
-func (t *Tasklet) GetPrompt() string {
-	if t.Prompt != nil {
-		return *t.Prompt
+func (t *Task) GetPrompt() string {
+	if t.prompt != nil {
+		return *t.prompt
 	}
-	return "tasklet prompt not set"
+	return "no set prompt"
 }
 
-func (t *Tasklet) GetSystemPrompt() string {
-	return t.SystemPrompt
+func (t *Task) GetSystemPrompt() string {
+	return t.systemPrompt
 }
 
-func (t *Tasklet) GetMaxHistory() uint {
+func (t *Task) GetMaxHistory() uint {
 	return 50
 }
 
-// user defined yaml tasks
-func (t *Tasklet) GetFunctions() []Function {
-	fs := t.Functions
-	fmt.Println("Called GetFunctions")
-	fmt.Println(fs)
-	return t.Functions
+func (t *Task) GetGuidance() []string {
+	return t.guidance
 }
 
-func (*Tasklet) GetUserInput(prompt string) string {
-	fmt.Print("\n" + prompt)
-	fmt.Print(prompt) // プロンプトを表示
+// user defined yaml tasks
+func (t *Task) GetFunctions() []Function {
+	fs := t.functions
+	log.Println("Called GetFunctions")
+	log.Println(fs)
+	return t.functions
+}
+
+func (*Task) GetUserInput(prompt string) string {
+	log.Print("\n" + prompt)
+	log.Print(prompt)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
@@ -140,7 +147,7 @@ func (*Tasklet) GetUserInput(prompt string) string {
 	return strings.TrimSpace(input)
 }
 
-func (t *Tasklet) ParseVariableExpr(expr string) (string, string, error) {
+func (t *Task) ParseVariableExpr(expr string) (string, string, error) {
 	if !strings.HasPrefix(expr, "$") {
 		return "", "", fmt.Errorf("'%s' is not a valid variable expression", expr)
 	}
@@ -166,4 +173,15 @@ func (t *Tasklet) ParseVariableExpr(expr string) (string, string, error) {
 	// user input
 	userInput := t.GetUserInput(fmt.Sprintf("\nplease set $%s: ", varName))
 	return varName, userInput, nil
+}
+
+func (t *Task) GetTimeout() *time.Duration {
+	if t.timeout != nil {
+		return t.timeout
+	}
+	return nil
+}
+
+func (t *Task) GetName() string {
+	return t.name
 }

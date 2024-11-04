@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -44,7 +44,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("notch v0.0.1 🧠 gpt4-o @openai %s", tasklet.Name)
+	log.Printf("notch v0.0.1 🧠 gpt4-o @openai %s", tasklet.GetName())
 
 	e := engine.NewEngine(tasklet, factory, uint(maxIterations))
 

@@ -10,8 +10,10 @@ type Execution struct {
 	Response *string
 	// parsed llm response to invocation
 	Invocation *llm.Invocation
-	Result     *string
-	Error      *string
+	// if engine executed success
+	Result *string
+	// if engine executed error
+	Error *string
 }
 
 func NewExecution(

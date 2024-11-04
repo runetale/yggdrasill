@@ -22,15 +22,17 @@ type Tasklet struct {
 	predefined       *map[string]string
 }
 
+// TODO: implement complete and impossible
 func NewTasklet() action.Action {
 	return &Tasklet{
+		name:        "tasklet",
 		storageType: types.UNTAGGED,
 		predefined:  nil,
 	}
 }
 
 func (s *Tasklet) Name() string {
-	return "shell"
+	return s.name
 }
 
 func (s *Tasklet) ExamplePayload() *string {
@@ -56,12 +58,12 @@ func (s *Tasklet) Description() string {
 	return string(data)
 }
 
-func (s *Tasklet) Run(storage storage.Storage, attributes map[string]string, payload string) string {
+func (s *Tasklet) Run(storage *storage.Storage, attributes map[string]string, payload string) string {
 	return "run"
 }
 
-func (s *Tasklet) Timeout() time.Duration {
-	return time.Duration(0)
+func (s *Tasklet) Timeout() *time.Duration {
+	return nil
 }
 
 func (s *Tasklet) RequiredVariables() []string {
@@ -73,5 +75,5 @@ func (s *Tasklet) RequiresUserConfirmation() bool {
 }
 
 func (s *Tasklet) GetNamespace() types.NamespaceType {
-	return types.SHELL
+	return types.TASKLET
 }

@@ -15,7 +15,7 @@ import (
 )
 
 type State struct {
-	task      *task.Tasklet
+	task      *task.Task
 	storages  map[string]*storage.Storage
 	variables map[string]string // pre-define variables
 	// 各Namespaceを持った構造体
@@ -38,7 +38,7 @@ type State struct {
 // TODO implement rag model
 func NewState(
 	sender *events.Channel,
-	task *task.Tasklet,
+	task *task.Task,
 	maxIterations uint,
 	serializationInvocation func(inv *llm.Invocation) *string,
 ) *State {
@@ -110,8 +110,8 @@ func NewState(
 	for key, storage := range storages {
 		if key == "goal" {
 			prompt := task.GetPrompt()
-			fmt.Println("set goal prompt")
-			fmt.Printf("%s\n", prompt)
+			log.Println("set goal prompt")
+			log.Printf("%s\n", prompt)
 			storage.SetCurrent(prompt)
 		}
 	}
@@ -142,19 +142,20 @@ func (s *State) OnEvent(event *events.Event) {
 	s.onEventCallback(event)
 }
 
-func (s *State) GetTask() *task.Tasklet {
+func (s *State) GetTask() *task.Task {
 	return s.task
 }
 
 func (s *State) GetPrompt() string {
-	if s.task.Prompt != nil {
-		return *s.task.Prompt
-	}
-	return "state prompt not set"
+	return s.task.GetPrompt()
 }
 
 func (s *State) GetStorages() map[string]*storage.Storage {
 	return s.storages
+}
+
+func (s *State) GetStorage(actionName string) *storage.Storage {
+	return s.storages[actionName]
 }
 
 func (s *State) GetNamespaces() []*namespace.Namespace {
@@ -254,6 +255,18 @@ func (s *State) IncrementValidMetrics() {
 
 func (s *State) IncrementValidActionsMetrics() {
 	s.metrics.validActions += 1
+}
+
+func (s *State) IncrementErroredActionMetrics() {
+	s.metrics.errors.erroredActions += 1
+}
+
+func (s *State) IncrementSuccessActionMetrics() {
+	s.metrics.successActions += 1
+}
+
+func (s *State) IncrementTimeoutActionMetrics() {
+	s.metrics.errors.timedoutActions += 1
 }
 
 // calling invocation.action from engine

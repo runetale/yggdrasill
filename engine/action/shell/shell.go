@@ -39,12 +39,12 @@ func (s *Shell) Description() string {
 	return string(data)
 }
 
-func (s *Shell) Run(storage storage.Storage, attributes map[string]string, payload string) string {
+func (s *Shell) Run(storage *storage.Storage, attributes map[string]string, payload string) string {
 	return "run"
 }
 
-func (s *Shell) Timeout() time.Duration {
-	return time.Duration(0)
+func (s *Shell) Timeout() *time.Duration {
+	return nil
 }
 
 func (s *Shell) ExamplePayload() *string {
