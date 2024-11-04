@@ -35,7 +35,7 @@ type Namespace struct {
 }
 
 // get namespace by types.Namespacetype
-func NewNamespace(ns types.NamespaceType, functions []task.Function,
+func NewNamespace(ns types.NamespaceType, functions []*task.Function,
 ) *Namespace {
 	var ac action.Action
 	switch ns {
@@ -49,6 +49,8 @@ func NewNamespace(ns types.NamespaceType, functions []task.Function,
 		predefined["Accept-Encoding"] = "deflate"
 		// TODO: NewHTTP need for some pre header value
 		// ac = tasklet.NewHTTP(predefined)
+	default:
+		panic("aa")
 	}
 
 	sd := NewStorageDescriptor(ac.Name(), ac.StorageType(), ac.Predefined())
