@@ -14,6 +14,8 @@ import (
 	"github.com/runetale/notch/task"
 )
 
+const version = "0.0.1"
+
 var notchArgs struct {
 	taskpath      string
 	prompt        string
@@ -24,13 +26,13 @@ var notchArgs struct {
 }
 
 var NotchCmd = &ffcli.Command{
-	Name:       "",
-	ShortUsage: "[flags]",
+	Name:       "up",
+	ShortUsage: "up [flags]",
 	ShortHelp:  "command to start notch",
 	FlagSet: (func() *flag.FlagSet {
-		fs := flag.NewFlagSet("", flag.ExitOnError)
+		fs := flag.NewFlagSet("up", flag.ExitOnError)
 		fs.StringVar(&notchArgs.taskpath, "T", "", "execute template file paths")
-		fs.StringVar(&notchArgs.taskpath, "P", "", "specify prompt, if not provided by task")
+		fs.StringVar(&notchArgs.prompt, "P", "", "specify prompt, if not provided by task")
 		fs.StringVar(&notchArgs.generator, "G", "openai://gpt-4@localhost:12321", "generator string, {provider}://{model}@{host}:{port}")
 		fs.IntVar(&notchArgs.contextWindow, "context-window", 8000, "")
 		fs.StringVar(&notchArgs.apiKey, "key", "", "api key by provider models")
@@ -44,12 +46,12 @@ func exec(ctx context.Context, args []string) error {
 	// setup llm
 	options, err := llm.NewLLMOptions(notchArgs.generator, uint32(notchArgs.contextWindow))
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	factory, err := llm.NewLLMFactory(options, notchArgs.apiKey)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// TODO: add embedder for RAG
@@ -57,7 +59,7 @@ func exec(ctx context.Context, args []string) error {
 	// setup task
 	tasklet, err := task.GetFromPath(notchArgs.taskpath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = tasklet.Setup(&notchArgs.prompt)
@@ -65,7 +67,7 @@ func exec(ctx context.Context, args []string) error {
 		panic(err)
 	}
 
-	log.Printf("notch v0.0.1 🧠 gpt4-o@openai %s", tasklet.GetName())
+	log.Printf("notch v%s > 🧬 %s %s", version, notchArgs.generator, tasklet.GetName())
 
 	e := engine.NewEngine(tasklet, factory, uint(notchArgs.maxIterations))
 

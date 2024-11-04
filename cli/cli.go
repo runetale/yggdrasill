@@ -18,6 +18,7 @@ func main() {
 }
 
 func run(args []string) error {
+	// add sub command
 	if len(args) == 1 && (args[0] == "-V" || args[0] == "--version" || args[0] == "-v") {
 		args = []string{"version"}
 	}

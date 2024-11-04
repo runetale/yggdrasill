@@ -39,22 +39,27 @@ func parseGeneratorString(raw string, contextWindow uint32) (LLMOptions, error) 
 		contextWindow: contextWindow,
 	}
 
-	localGeneratorPattern := `^([a-zA-Z0-9_]+)://([a-zA-Z0-9_-]+)@([a-zA-Z0-9_.-]+):(\d+)$`
+	localGeneratorPattern := `^([a-zA-Z0-9_]+)://([a-zA-Z0-9_-]+)(?:@([a-zA-Z0-9_.-]+)(?::(\d+))?)?$`
 	re := regexp.MustCompile(localGeneratorPattern)
 
 	matches := re.FindStringSubmatch(raw)
-	if matches == nil || len(matches) != 5 {
+	if matches == nil || len(matches) < 3 {
 		return LLMOptions{}, fmt.Errorf("can't parse '%s' generator string", raw)
 	}
 
 	generator.typeName = LLMTypeName(matches[1])
 	generator.modelName = matches[2]
-	generator.host = matches[3]
-	port, err := strconv.Atoi(matches[4])
-	if err != nil {
-		return LLMOptions{}, fmt.Errorf("invalid port: %s", matches[4])
+
+	if len(matches) >= 4 && matches[3] != "" {
+		generator.host = matches[3]
 	}
-	generator.port = uint16(port)
+	if len(matches) >= 5 && matches[4] != "" {
+		port, err := strconv.Atoi(matches[4])
+		if err != nil {
+			return LLMOptions{}, fmt.Errorf("invalid port: %s", matches[4])
+		}
+		generator.port = uint16(port)
+	}
 
 	return generator, nil
 }
