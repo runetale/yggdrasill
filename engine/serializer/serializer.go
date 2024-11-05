@@ -153,6 +153,8 @@ func SerializeStorage(s *storage.Storage) string {
 }
 
 func TryParse(raw string) []*llm.Invocation {
+	fmt.Println("Got Raw")
+	fmt.Println(raw)
 	ptr := raw
 	var parsedInvocations []*llm.Invocation
 	uniqueMap := make(map[string]bool)

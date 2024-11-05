@@ -23,18 +23,20 @@ type Engine struct {
 	maxHistory uint
 	task       *task.Task
 	timeout    *time.Duration
+	nativeTool bool
 
 	waitCh chan struct{}
 }
 
-func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint) *Engine {
+func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool bool) *Engine {
 	channel := events.NewChannel()
 
 	serializationInvocationCb := func(inv *llm.Invocation) *string {
 		return serializer.SerializeInvocation(inv)
 	}
-
 	s := state.NewState(channel, t, maxIterations, serializationInvocationCb)
+
+	// check using native tools
 
 	return &Engine{
 		channel:    channel,
@@ -43,6 +45,7 @@ func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint) *Engine {
 		state:      s,
 		task:       t,
 		timeout:    s.GetTask().GetTimeout(),
+		nativeTool: nativeTool,
 		waitCh:     make(chan struct{}),
 	}
 }
@@ -63,12 +66,11 @@ func (e *Engine) Done() <-chan struct{} {
 // for only display
 func (e *Engine) consumeEvent() {
 	for {
-		fmt.Println("[start consume event]")
-		// waiting receiver for each events
+		// waiting event cahn for each events
 		event := <-e.channel.Chan
+		fmt.Printf("RECEIVED EVENT: [%s]\n", event.EventType())
 		switch event.EventType() {
 		case events.ActionExecuted:
-
 		}
 	}
 }
@@ -77,23 +79,24 @@ func (e *Engine) automaton() {
 	for {
 		// prepare chat option
 		option := e.prepareAutomaton()
-		fmt.Println("[start automaton]")
 
 		// update state event
 		e.OnUpdateState(option, false)
 
 		// response from llm
 		invocations := []*llm.Invocation{}
-		toolCalls, response := e.factory.Chat(option)
+		toolCalls, response := e.factory.Chat(option, e.nativeTool, e.state.GetNamespaces())
+
 		// use our strategy
-		if toolCalls == nil {
+		if len(toolCalls) == 0 {
 			invocations = serializer.TryParse(response)
+		} else {
+			// use native function call by model supports
+			invocations = toolCalls
 		}
-		// use native function call by model supports
-		invocations = toolCalls
 
 		// return to llm response was null
-		if invocations == nil {
+		if len(invocations) == 0 {
 			if response == "" {
 				e.onEmptyResponse()
 				continue

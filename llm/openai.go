@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
+	"github.com/runetale/notch/engine/namespace"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -70,7 +72,7 @@ func NewOpenAIClient(model string, apikey string, url string, port uint16) LLMCl
 	}
 }
 
-func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string) {
+func (o *OpenAIClient) Chat(option *ChatOption, nativeSupport bool, namespaces []*namespace.Namespace) ([]*Invocation, string) {
 	chathistory := []openai.ChatCompletionMessage{
 		{
 			Role:      openai.ChatMessageRoleSystem,
@@ -104,8 +106,10 @@ func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string) {
 		}
 	}
 
-	// TODO: support native function tools,
-	// if you using function call, set Tools for ChatCompletionRequest
+	// add native tools function
+	if nativeSupport {
+		// todo: add logic
+	}
 
 	// request to chat
 	req := openai.ChatCompletionRequest{
@@ -165,4 +169,56 @@ func (o *OpenAIClient) Chat(option *ChatOption) ([]*Invocation, string) {
 	}
 
 	return invocations, content
+}
+
+func (o *OpenAIClient) CheckNatvieToolSupport() bool {
+	chathistory := []openai.ChatCompletionMessage{
+		{
+			Role:      openai.ChatMessageRoleSystem,
+			Content:   "You are an helpful assistant.",
+			ToolCalls: nil,
+		},
+		{
+			Role:      openai.ChatMessageRoleUser,
+			Content:   "Call the test function.",
+			ToolCalls: nil,
+		},
+	}
+
+	functionTools := []openai.Tool{}
+	functionTools = append(functionTools, openai.Tool{
+		Type: "function",
+		Function: &openai.FunctionDefinition{
+			Name:        "test",
+			Description: "This is a test function.",
+			Parameters:  nil,
+		},
+	})
+
+	req := openai.ChatCompletionRequest{
+		Model:    o.model,
+		Messages: chathistory,
+		Tools:    functionTools,
+	}
+
+	resp, err := o.client.CreateChatCompletion(
+		context.Background(),
+		req,
+	)
+
+	if err != nil {
+		log.Printf("error check native tool support request error %s", err.Error())
+		return false
+	}
+
+	if resp.Choices != nil {
+		m := resp.Choices[0].Message
+		if m.ToolCalls != nil {
+			log.Printf("using native tools by %s", o.model)
+			return true
+		}
+	}
+
+	log.Println("using original notch system prompt")
+	return false
 }

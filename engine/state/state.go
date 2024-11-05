@@ -75,22 +75,25 @@ func NewState(
 	for _, o := range namespaces {
 		required := o.GetAction().RequiredVariables()
 		if required == nil {
-			continue
+			break
 		}
 		log.Printf("actions %s requires %v\n", o.GetAction().Name(), required)
 		for _, vn := range required {
-			exp := fmt.Sprintf("$%s", vn)
+			exp := fmt.Sprintf("$%s", *vn)
 			varname, value, err := task.ParseVariableExpr(exp)
 			if err != nil {
+				log.Fatalf("error parse variable expr %s", err.Error())
 				return nil
 			}
 			variables[varname] = value
 		}
 	}
 
-	// add task defined actions by yaml
-	functions := task.GetFunctions()
-	namespaces = append(namespaces, namespace.NewNamespace(types.CUSTOM, functions))
+	// add task defined actions by yaml, if user was set
+	if task.GetFunctions() != nil {
+		functions := task.GetFunctions()
+		namespaces = append(namespaces, namespace.NewNamespace(types.CUSTOM, functions))
+	}
 
 	// set callback function
 	onEventCallback := func(event *events.Event) {
@@ -100,14 +103,11 @@ func NewState(
 
 	// create storages by namespaces
 	for _, namespace := range namespaces {
-		for _, currentStorage := range namespace.GetStorages() {
-			// if storages nil, set to newstorage by namespace
-			if currentStorage == nil {
-				newStorage := storage.NewStorage(namespace.GetName(), namespace.GetStorageType(), onEventCallback)
-				// set namespace to storage
-				currentStorage = newStorage
-				storages[namespace.GetName()] = newStorage
-			}
+		// if storages nil, set to newstorage by namespace
+		if namespace.GetStorages() == nil {
+			newStorage := storage.NewStorage(namespace.GetName(), namespace.GetStorageType(), onEventCallback)
+			// set namespace to storage
+			storages[namespace.GetName()] = newStorage
 		}
 	}
 	for key, storage := range storages {
