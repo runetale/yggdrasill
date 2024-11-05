@@ -11,6 +11,17 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
+type ToolFunctionParameterProperty struct {
+	Type        string `json:"type"`
+	Description string `json:"description"`
+}
+
+type ToolFunctionParameter struct {
+	Type       string                                   `json:"type"`
+	Required   []string                                 `json:"required"`
+	Properties map[string]ToolFunctionParameterProperty `json:"properties"`
+}
+
 const (
 	O1Mini                = "o1-mini"
 	O1Mini20240912        = "o1-mini-2024-09-12"
@@ -107,15 +118,54 @@ func (o *OpenAIClient) Chat(option *ChatOption, nativeSupport bool, namespaces [
 	}
 
 	// add native tools function
+	tools := []openai.Tool{}
 	if nativeSupport {
 		// todo: add logic
+		for _, group := range namespaces {
+			for _, action := range group.GetActions() {
+				required := []string{}
+				properties := map[string]ToolFunctionParameterProperty{}
+
+				if action.ExamplePayload() != nil {
+					required = append(required, "payload")
+					properties["payload"] = ToolFunctionParameterProperty{
+						Type:        "string",
+						Description: "Main function argument.",
+					}
+				}
+
+				for key, _ := range action.ExampleAttributes() {
+					required = append(required, key)
+					properties[key] = ToolFunctionParameterProperty{
+						Type:        "string",
+						Description: key,
+					}
+				}
+
+				function := &openai.FunctionDefinition{
+					Name:        action.Name(),
+					Description: action.Description(),
+					Parameters: ToolFunctionParameter{
+						Type:       "object",
+						Required:   required,
+						Properties: properties,
+					},
+				}
+
+				tools = append(tools, openai.Tool{
+					Type:     "function",
+					Function: function,
+				})
+				log.Printf("openai tools %v", tools)
+			}
+		}
 	}
 
 	// request to chat
 	req := openai.ChatCompletionRequest{
 		Model:    o.model,
 		Messages: chathistory,
-		Tools:    nil,
+		Tools:    tools,
 	}
 
 	resp, err := o.client.CreateChatCompletion(
