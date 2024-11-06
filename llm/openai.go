@@ -156,7 +156,6 @@ func (o *OpenAIClient) Chat(option *ChatOption, nativeSupport bool, namespaces [
 					Type:     "function",
 					Function: function,
 				})
-				log.Printf("openai tools %v", tools)
 			}
 		}
 	}

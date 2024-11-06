@@ -34,7 +34,7 @@
             cp notch $out/bin/
           '';
           allowGoReference = true;
-          vendorHash = "sha256-24W77/lCjQoCkOiJ5ZCSh7oXsX2+STZz+ojAOWy4ux0=";
+          vendorHash = "sha256-Gw+9NMT5r1mMl9KHxKdVlv2sPTeJNImcHXU6eU/mERE=";
           meta = with pkgs.lib; {
             description = "notch project";
             license = licenses.mit;
