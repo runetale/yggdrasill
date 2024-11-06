@@ -33,6 +33,8 @@ const (
 	XML StrategyFormat = "xml"
 )
 
+var sigPipe os.Signal
+
 var NotchCmd = &ffcli.Command{
 	Name:       "up",
 	ShortUsage: "up [flags]",
@@ -85,9 +87,13 @@ func exec(ctx context.Context, args []string) error {
 	// start
 	go e.Start()
 
-	interrupt := make(chan os.Signal, 1)
 	ch := make(chan struct{})
+	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
+	if sigPipe != nil {
+		signal.Ignore(sigPipe)
+	}
+
 	go func() {
 		for {
 			select {
@@ -96,6 +102,7 @@ func exec(ctx context.Context, args []string) error {
 				return
 			case <-e.Done():
 				close(ch)
+				log.Printf("shutdown completed notch")
 				return
 			}
 		}

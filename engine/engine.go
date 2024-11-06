@@ -54,10 +54,10 @@ func (e *Engine) Start() {
 	go e.consumeEvent()
 	go e.automaton()
 
-	// terminated engine process
+	// waiting terminated engine process
 	comp := <-e.state.Complete()
 	if comp {
-		fmt.Println("[finished engine complete]")
+		log.Printf("shutdown...")
 		e.Stop()
 	}
 }
@@ -75,7 +75,7 @@ func (e *Engine) consumeEvent() {
 	for {
 		// waiting event cahn for each events
 		event := <-e.channel.Chan
-		fmt.Printf("RECEIVED EVENT: [%s] %s happened %s \n", event.EventType(), event.Name(), event.Happened())
+		fmt.Printf("RECEIVED EVENT: %s happened %s by %s \n", event.Name(), event.Happened(), event.EventType())
 	}
 }
 
@@ -88,7 +88,7 @@ func (e *Engine) automaton() {
 		e.OnUpdateState(option, false)
 
 		// response from llm
-		invocations := []*llm.Invocation{}
+		var invocations []*llm.Invocation
 		toolCalls, response := e.factory.Chat(option, e.nativeTool, e.state.GetNamespaces())
 
 		// use our strategy
@@ -273,7 +273,7 @@ func (e *Engine) onExecutedErrorAction(inv *llm.Invocation, err *string, start t
 func (e *Engine) onExecutedSuccessAction(inv *llm.Invocation, result *string, start time.Duration) {
 	e.state.IncrementSuccessActionMetrics()
 	e.state.AddSuccessToHistory(inv, result)
-	e.state.OnEvent(events.NewEvent(events.ActionExecuted, "engine", fmt.Sprintf("on-executed-success-action %s", *result)))
+	e.state.OnEvent(events.NewEvent(events.ActionExecuted, "engine", fmt.Sprintf(*result)))
 }
 
 func (e *Engine) onTimeoutAction(inv *llm.Invocation, start time.Duration) {
