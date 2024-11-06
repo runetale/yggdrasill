@@ -53,6 +53,13 @@ func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool b
 func (e *Engine) Start() {
 	go e.consumeEvent()
 	go e.automaton()
+
+	// terminated engine process
+	comp := <-e.state.Complete()
+	if comp {
+		fmt.Println("[finished engine complete]")
+		e.Stop()
+	}
 }
 
 func (e *Engine) Stop() {
@@ -136,8 +143,7 @@ func (e *Engine) automaton() {
 				inp := "nope"
 
 				for inp != "" && inp != "n" && inp != "y" {
-					fmt.Println("invocation by y or n")
-					fmt.Printf("%v\n", inv)
+					log.Println("invocation by y or n")
 					inp = e.task.GetUserInput(fmt.Sprintf("%s [Yn] ", inv.FunctionCallString()))
 					inp = strings.ToLower(inp)
 				}
@@ -164,13 +170,7 @@ func (e *Engine) automaton() {
 
 		// update state
 		e.OnUpdateState(option, true)
-
-		// terminated engine process
-		comp := <-e.state.Complete()
-		if comp {
-			fmt.Println("[finished engine complete]")
-			e.Stop()
-		}
+		continue
 	}
 }
 
@@ -273,7 +273,7 @@ func (e *Engine) onExecutedErrorAction(inv *llm.Invocation, err *string, start t
 func (e *Engine) onExecutedSuccessAction(inv *llm.Invocation, result *string, start time.Duration) {
 	e.state.IncrementSuccessActionMetrics()
 	e.state.AddSuccessToHistory(inv, result)
-	e.state.OnEvent(events.NewEvent(events.ActionExecuted, "engine", "on-executed-success-action"))
+	e.state.OnEvent(events.NewEvent(events.ActionExecuted, "engine", fmt.Sprintf("on-executed-success-action %s", *result)))
 }
 
 func (e *Engine) onTimeoutAction(inv *llm.Invocation, start time.Duration) {
