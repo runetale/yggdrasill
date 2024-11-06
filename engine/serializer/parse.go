@@ -28,7 +28,7 @@ func buildInvocation(closingName string, element xml.StartElement, payload strin
 		return nil, fmt.Errorf("unexpected closing %s while parsing %s", closingName, element.Name.Local)
 	}
 
-	attributes := make(map[string]string)
+	attributes := make(map[string]string, 0)
 	for _, attr := range element.Attr {
 		attributes[attr.Name.Local] = attr.Value
 	}

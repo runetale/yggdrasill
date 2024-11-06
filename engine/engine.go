@@ -68,10 +68,7 @@ func (e *Engine) consumeEvent() {
 	for {
 		// waiting event cahn for each events
 		event := <-e.channel.Chan
-		fmt.Printf("RECEIVED EVENT: [%s]\n", event.EventType())
-		switch event.EventType() {
-		case events.ActionExecuted:
-		}
+		fmt.Printf("RECEIVED EVENT: [%s] %s happened %s \n", event.EventType(), event.Name(), event.Happened())
 	}
 }
 
@@ -113,14 +110,14 @@ func (e *Engine) automaton() {
 			// found action
 			ac := e.state.GetAciton(inv.Action)
 			if ac == nil {
-				e.onInvalidAction(inv, fmt.Sprintf("cannot found action %s", inv.Action))
+				e.onInvalidAction(inv, fmt.Sprintf("cannot found action by %s", inv.Action))
 				break
 			}
 
 			// validate actions
 			err := inv.ValidateAction(ac)
 			if err != nil {
-				e.onInvalidAction(inv, fmt.Sprintf("invalid action %s", inv.Action))
+				e.onInvalidAction(inv, fmt.Sprintf("invalid action %s", err.Error()))
 				break
 			}
 
@@ -264,7 +261,7 @@ func (e *Engine) onValidAction() {
 func (e *Engine) onInvalidAction(inv *llm.Invocation, err string) {
 	e.state.IncrementUnknownMetrics()
 	e.state.AddErrorToHistory(inv, err)
-	e.state.OnEvent(events.NewEvent(events.InvalidAction, "engine", "on-invalid-action"))
+	e.state.OnEvent(events.NewEvent(events.InvalidAction, "engine", fmt.Sprintf("on-invalid-action %s", err)))
 }
 
 func (e *Engine) onExecutedErrorAction(inv *llm.Invocation, err *string, start time.Duration) {

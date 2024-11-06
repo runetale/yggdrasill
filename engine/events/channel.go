@@ -33,6 +33,14 @@ func (e *Event) EventType() EventType {
 	return e.eventType
 }
 
+func (e *Event) Name() string {
+	return e.name
+}
+
+func (e *Event) Happened() string {
+	return e.happened
+}
+
 type Channel struct {
 	Chan chan *Event
 }

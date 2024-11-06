@@ -20,6 +20,9 @@ func NewInvocation(
 	attributes map[string]string,
 	payload *string,
 ) *Invocation {
+	if len(attributes) == 0 {
+		attributes = nil
+	}
 	return &Invocation{
 		Action:     action,
 		Attributes: attributes,
