@@ -118,9 +118,9 @@ func (o *OpenAIClient) Chat(option *ChatOption, nativeSupport bool, namespaces [
 	}
 
 	// add native tools function
+	// setting each namespaces actions,
 	tools := []openai.Tool{}
 	if nativeSupport {
-		// todo: add logic
 		for _, group := range namespaces {
 			for _, action := range group.GetActions() {
 				required := []string{}

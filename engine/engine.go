@@ -75,7 +75,19 @@ func (e *Engine) consumeEvent() {
 	for {
 		// waiting event cahn for each events
 		event := <-e.channel.Chan
-		fmt.Printf("RECEIVED EVENT: %s happened %s by %s \n", event.Name(), event.Happened(), event.EventType())
+		switch event.EventType() {
+		case events.MetricsUpdate:
+		case events.StorageUpdate:
+		case events.StateUpdate:
+		case events.InvalidUpdate:
+		case events.InvalidAction:
+		case events.InvalidResponse:
+		case events.ActionTimeOut:
+		case events.ActionExecuted:
+		case events.TaskComplete:
+		case events.EmptyResponse:
+
+		}
 	}
 }
 
@@ -104,9 +116,10 @@ func (e *Engine) automaton() {
 			if response == "" {
 				e.onEmptyResponse()
 				continue
+			} else {
+				e.onInvalidResponse(response)
+				continue
 			}
-			e.onInvalidResponse(response)
-			continue
 		}
 
 		// update metrics
@@ -238,10 +251,10 @@ func (e *Engine) sendEvent(events *events.Event) {
 	e.state.OnEvent(events)
 }
 
-func (e *Engine) onInvalidResponse(reponse string) {
+func (e *Engine) onInvalidResponse(response string) {
 	e.state.IncrementUnparsedMetrics()
-	e.state.AddUnparsedResponseToHistory(reponse, "no effective solution found, follow the instructions to correct this")
-	e.state.OnEvent(events.NewEvent(events.InvalidResponse, "engine", "on-invalid-response"))
+	e.state.AddUnparsedResponseToHistory(response, "no effective solution found, follow the instructions to correct this")
+	e.state.OnEvent(events.NewEvent(events.InvalidResponse, "engine", fmt.Sprintf("agent did not provide valid instructions: \n\n%s\n\n", response)))
 }
 
 func (e *Engine) onEmptyResponse() {
@@ -273,7 +286,7 @@ func (e *Engine) onExecutedErrorAction(inv *llm.Invocation, err *string, start t
 func (e *Engine) onExecutedSuccessAction(inv *llm.Invocation, result *string, start time.Duration) {
 	e.state.IncrementSuccessActionMetrics()
 	e.state.AddSuccessToHistory(inv, result)
-	e.state.OnEvent(events.NewEvent(events.ActionExecuted, "engine", fmt.Sprintf(*result)))
+	e.state.OnEvent(events.NewEvent(events.ActionExecuted, "engine", "on-executed-success-action"))
 }
 
 func (e *Engine) onTimeoutAction(inv *llm.Invocation, start time.Duration) {

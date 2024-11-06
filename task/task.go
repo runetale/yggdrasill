@@ -86,8 +86,8 @@ func getFromYamlFile(filePath string) (*Task, error) {
 	return &tasklet, nil
 }
 
-// userPromptが無ければ入力を受け付ける
-// Promptが設定されていない場合はuserからのpromptを設定する
+// accept input if no userPrompt.
+// if no Prompt is set, set a Prompt from user
 func (t *Task) Setup(userPrompt *string) error {
 	if userPrompt == nil {
 		input := t.GetUserInput("enter task > ")

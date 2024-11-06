@@ -2,6 +2,7 @@ package namespace
 
 import (
 	"github.com/runetale/notch/engine/action"
+	"github.com/runetale/notch/engine/action/goal"
 	"github.com/runetale/notch/engine/action/shell"
 	"github.com/runetale/notch/engine/action/tasklet"
 	"github.com/runetale/notch/storage"
@@ -43,6 +44,8 @@ func NewNamespace(ns types.NamespaceType, functions []*task.Function,
 		ac = shell.NewShell()
 	case types.CUSTOM:
 		ac = tasklet.NewTasklet()
+	case types.GOAL:
+		ac = goal.NewGoal()
 	case types.HTTP:
 		predefined := map[string]string{}
 		predefined["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"

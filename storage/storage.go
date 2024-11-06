@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"sort"
 	"strconv"
 	"time"
@@ -152,7 +153,18 @@ func (s *Storage) SetInComplete(pos int) bool {
 
 func (s *Storage) SetCurrent(data string) {
 	s.entry[CURRENT_TAG] = NewEntry(data)
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "set-current"))
+	if s.storageType != types.CURRENTPREVIOUS {
+		panic("storage type must be CurrentPrevious")
+	}
+
+	oldCurrent, exists := s.entry[CURRENT_TAG]
+	s.entry[CURRENT_TAG] = NewEntry(data)
+
+	if exists {
+		s.entry[PREVIOUS_TAG] = oldCurrent
+	}
+
+	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, fmt.Sprintf("set goal %s", data)))
 }
 
 func (s *Storage) Clear(data string) {
