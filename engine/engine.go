@@ -58,12 +58,12 @@ func (e *Engine) Start() {
 	comp := <-e.state.Complete()
 	if comp {
 		log.Printf("shutdown...")
-		e.Stop()
+		close(e.waitCh)
 	}
 }
 
 func (e *Engine) Stop() {
-	close(e.waitCh)
+	e.state.Close()
 }
 
 func (e *Engine) Done() <-chan struct{} {
@@ -86,7 +86,6 @@ func (e *Engine) consumeEvent() {
 		case events.ActionExecuted:
 		case events.TaskComplete:
 		case events.EmptyResponse:
-
 		}
 	}
 }

@@ -98,7 +98,7 @@ func exec(ctx context.Context, args []string) error {
 		for {
 			select {
 			case <-interrupt:
-				close(ch)
+				e.Stop()
 				return
 			case <-e.Done():
 				close(ch)

@@ -3,6 +3,7 @@ package namespace
 import (
 	"github.com/runetale/notch/engine/action"
 	"github.com/runetale/notch/engine/action/goal"
+	"github.com/runetale/notch/engine/action/memory"
 	"github.com/runetale/notch/engine/action/shell"
 	"github.com/runetale/notch/engine/action/tasklet"
 	"github.com/runetale/notch/storage"
@@ -46,6 +47,8 @@ func NewNamespace(ns types.NamespaceType, functions []*task.Function,
 		ac = tasklet.NewTasklet()
 	case types.GOAL:
 		ac = goal.NewGoal()
+	case types.MEMORY:
+		ac = memory.NewSaveMemroy()
 	case types.HTTP:
 		predefined := map[string]string{}
 		predefined["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
@@ -53,7 +56,7 @@ func NewNamespace(ns types.NamespaceType, functions []*task.Function,
 		// TODO: NewHTTP need for some pre header value
 		// ac = tasklet.NewHTTP(predefined)
 	default:
-		panic("aa")
+		panic("not implemented namespaces")
 	}
 
 	sd := NewStorageDescriptor(ac.Name(), ac.StorageType(), ac.Predefined())
@@ -85,6 +88,10 @@ func (n *Namespace) GetAction() action.Action {
 
 func (n *Namespace) GetStorages() []*storage.Storage {
 	return n.stroages
+}
+
+func (n *Namespace) SetStorage(s *storage.Storage) {
+	n.stroages = append(n.stroages, s)
 }
 
 func (n *Namespace) GetStorageType() types.StorageType {

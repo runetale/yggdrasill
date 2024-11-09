@@ -1,3 +1,5 @@
+// tagging namespace storage type
+// using serialize storage function. e.g. display storage
 package types
 
 type StorageType string

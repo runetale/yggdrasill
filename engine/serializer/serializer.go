@@ -41,13 +41,20 @@ func DisplaySystemPrompt(state *state.State) (string, error) {
 	sysprompt := task.GetSystemPrompt()
 
 	// storages
+	// sort
 	storages := state.GetStorages()
 	sortedStorageKeys := make([]string, 0, len(storages))
 	for key := range storages {
 		sortedStorageKeys = append(sortedStorageKeys, key)
 	}
 	sort.Strings(sortedStorageKeys)
-	storage := strings.Join(sortedStorageKeys, "\n\n")
+
+	// serialization
+	serializedStorage := []string{}
+	for _, key := range sortedStorageKeys {
+		serializedStorage = append(serializedStorage, serializeStorage(storages[key]))
+	}
+	displayStorages := strings.Join(serializedStorage, "\n\n")
 
 	// guidance
 	var formattedGuidance []string
@@ -71,7 +78,7 @@ func DisplaySystemPrompt(state *state.State) (string, error) {
 
 	data := System{
 		SystemPrompt:     sysprompt,
-		Storages:         storage,
+		Storages:         displayStorages,
 		Iterations:       iterations,
 		AvailableActions: availableActions,
 		Guidance:         guidance,
@@ -136,7 +143,7 @@ func SerializeAction(ac action.Action) string {
 	return parseAction(ac)
 }
 
-func SerializeStorage(s *storage.Storage) string {
+func serializeStorage(s *storage.Storage) string {
 	return paraseStorage(s)
 }
 

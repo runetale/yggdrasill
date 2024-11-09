@@ -106,7 +106,7 @@ func NewState(
 		// if storages nil, set to newstorage by namespace
 		if namespace.GetStorages() == nil {
 			newStorage := storage.NewStorage(namespace.GetName(), namespace.GetStorageType(), onEventCallback)
-			// set namespace to storage
+			namespace.SetStorage(newStorage)
 			storages[namespace.GetName()] = newStorage
 		}
 	}
