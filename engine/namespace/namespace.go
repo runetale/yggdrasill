@@ -6,7 +6,6 @@ import (
 	"github.com/runetale/notch/engine/action/memory"
 	"github.com/runetale/notch/engine/action/shell"
 	"github.com/runetale/notch/engine/action/tasklet"
-	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/task"
 	"github.com/runetale/notch/types"
 )
@@ -45,7 +44,6 @@ func (s *StorageDescriptor) StorageType() types.StorageType {
 type Namespace struct {
 	name        string
 	description string
-	stroages    []*storage.Storage
 	actions     []action.Action
 	// description of storages, using memory types
 	storageDescriptor []*StorageDescriptor
@@ -119,10 +117,6 @@ func (n *Namespace) Name() string {
 
 func (n *Namespace) Actions() []action.Action {
 	return n.actions
-}
-
-func (n *Namespace) SetStorage(s *storage.Storage) {
-	n.stroages = append(n.stroages, s)
 }
 
 // list of actions with action itself

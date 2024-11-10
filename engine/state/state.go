@@ -116,8 +116,6 @@ func NewState(
 							newStorage.AddData(key, *value)
 						}
 					}
-
-					namespace.SetStorage(newStorage)
 					storages[storageDescriptor.Name()] = newStorage
 				}
 			}
