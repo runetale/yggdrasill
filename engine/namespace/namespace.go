@@ -14,10 +14,10 @@ import (
 type StorageDescriptor struct {
 	name        string
 	storageType types.StorageType
-	predefined  *map[string]string
+	predefined  map[string]*string
 }
 
-func NewStorageDescriptor(name string, storagetype types.StorageType, predefined *map[string]string) *StorageDescriptor {
+func NewStorageDescriptor(name string, storagetype types.StorageType, predefined map[string]*string) *StorageDescriptor {
 	return &StorageDescriptor{
 		name:        name,
 		storageType: storagetype,
@@ -25,30 +25,68 @@ func NewStorageDescriptor(name string, storagetype types.StorageType, predefined
 	}
 }
 
+func (s *StorageDescriptor) Name() string {
+	return s.name
+}
+
+func (s *StorageDescriptor) Type() types.StorageType {
+	return s.storageType
+}
+
+func (s *StorageDescriptor) Predefined() map[string]*string {
+	return s.predefined
+}
+
+func (s *StorageDescriptor) StorageType() types.StorageType {
+	return s.storageType
+}
+
 // managed all namespace actions
 type Namespace struct {
 	name        string
 	description string
 	stroages    []*storage.Storage
-	action      action.Action
 	actions     []action.Action
-	// description of storages
-	storageDescriptor *StorageDescriptor
+	// description of storages, using memory types
+	storageDescriptor []*StorageDescriptor
 }
 
 // get namespace by types.Namespacetype
 func NewNamespace(ns types.NamespaceType, functions []*task.Function,
 ) *Namespace {
-	var ac action.Action
+	var (
+		name        string
+		description string
+	)
+
+	actions := []action.Action{}
+	descriptors := []*StorageDescriptor{}
+
 	switch ns {
 	case types.SHELL:
-		ac = shell.NewShell()
-	case types.CUSTOM:
-		ac = tasklet.NewTasklet()
+		s := shell.NewShell()
+		name = "Shell"
+		description = s.NamespaceDescription()
+		actions = append(actions, s)
+	case types.TASKLET:
+		t := tasklet.NewTasklet()
+		name = "Task"
+		description = t.NamespaceDescription()
+		actions = append(actions, t)
 	case types.GOAL:
-		ac = goal.NewGoal()
+		g := goal.NewGoal()
+		name = "Goal"
+		description = g.NamespaceDescription()
+		actions = append(actions, g)
+		descriptors = append(descriptors, NewStorageDescriptor("goal", types.CURRENTPREVIOUS, nil))
 	case types.MEMORY:
-		ac = memory.NewSaveMemroy()
+		sm := memory.NewSaveMemroy()
+		dm := memory.NewDeleteMemory()
+		name = "Memory"
+		description = sm.NamespaceDescription()
+		actions = append(actions, sm)
+		actions = append(actions, dm)
+		descriptors = append(descriptors, NewStorageDescriptor("memories", types.TAGGED, nil))
 	case types.HTTP:
 		predefined := map[string]string{}
 		predefined["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
@@ -59,43 +97,32 @@ func NewNamespace(ns types.NamespaceType, functions []*task.Function,
 		panic("not implemented namespaces")
 	}
 
-	sd := NewStorageDescriptor(ac.Name(), ac.StorageType(), ac.Predefined())
-
-	actions := []action.Action{}
-	actions = append(actions, ac)
-
 	return &Namespace{
-		name:              ac.Name(),
-		description:       ac.Description(),
-		stroages:          nil,
-		action:            ac,
+		name:              name,
+		description:       description,
 		actions:           actions,
-		storageDescriptor: sd,
+		storageDescriptor: descriptors,
 	}
 }
 
-func (n *Namespace) GetName() string {
-	return n.action.Name()
+func (n *Namespace) Description() string {
+	return n.description
 }
 
-func (n *Namespace) GetDescription() string {
-	return n.action.Description()
+func (n *Namespace) GetStrorageDescriptor() []*StorageDescriptor {
+	return n.storageDescriptor
 }
 
-func (n *Namespace) GetAction() action.Action {
-	return n.action
+func (n *Namespace) Name() string {
+	return n.name
 }
 
-func (n *Namespace) GetStorages() []*storage.Storage {
-	return n.stroages
+func (n *Namespace) Actions() []action.Action {
+	return n.actions
 }
 
 func (n *Namespace) SetStorage(s *storage.Storage) {
 	n.stroages = append(n.stroages, s)
-}
-
-func (n *Namespace) GetStorageType() types.StorageType {
-	return n.storageDescriptor.storageType
 }
 
 // list of actions with action itself

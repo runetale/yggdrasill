@@ -64,10 +64,16 @@ func (m *SaveMemory) RequiredVariables() []*string {
 	return nil
 }
 
+func (m *SaveMemory) GetNamespace() types.NamespaceType {
+	return types.MEMORY
+}
+
 func (m *SaveMemory) RequiresUserConfirmation() bool {
 	return true
 }
 
-func (m *SaveMemory) GetNamespace() types.NamespaceType {
-	return types.MEMORY
+func (m *SaveMemory) NamespaceDescription() string {
+	filepath := "ns.prompt"
+	data, _ := os.ReadFile(filepath)
+	return string(data)
 }

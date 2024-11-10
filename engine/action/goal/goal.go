@@ -68,3 +68,9 @@ func (d *Goal) RequiresUserConfirmation() bool {
 func (d *Goal) GetNamespace() types.NamespaceType {
 	return types.GOAL
 }
+
+func (d *Goal) NamespaceDescription() string {
+	filepath := "ns.prompt"
+	data, _ := os.ReadFile(filepath)
+	return string(data)
+}

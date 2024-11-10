@@ -90,9 +90,6 @@ func exec(ctx context.Context, args []string) error {
 	ch := make(chan struct{})
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
-	if sigPipe != nil {
-		signal.Ignore(sigPipe)
-	}
 
 	go func() {
 		for {

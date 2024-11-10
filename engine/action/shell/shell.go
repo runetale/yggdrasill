@@ -98,3 +98,9 @@ func (s *Shell) RequiresUserConfirmation() bool {
 func (s *Shell) GetNamespace() types.NamespaceType {
 	return types.SHELL
 }
+
+func (s *Shell) NamespaceDescription() string {
+	filepath := "ns.prompt"
+	data, _ := os.ReadFile(filepath)
+	return string(data)
+}

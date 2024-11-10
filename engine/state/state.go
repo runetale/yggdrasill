@@ -73,26 +73,29 @@ func NewState(
 
 	// set variables
 	for _, o := range namespaces {
-		required := o.GetAction().RequiredVariables()
-		if required == nil {
-			break
-		}
-		log.Printf("actions %s requires %v\n", o.GetAction().Name(), required)
-		for _, vn := range required {
-			exp := fmt.Sprintf("$%s", *vn)
-			varname, value, err := task.ParseVariableExpr(exp)
-			if err != nil {
-				log.Fatalf("error parse variable expr %s", err.Error())
-				return nil
+		for _, action := range o.Actions() {
+			required := action.RequiredVariables()
+			if required == nil {
+				break
 			}
-			variables[varname] = value
+			log.Printf("actions %s requires %v\n", action.Name(), required)
+			for _, vn := range required {
+				exp := fmt.Sprintf("$%s", *vn)
+				varname, value, err := task.ParseVariableExpr(exp)
+				if err != nil {
+					log.Fatalf("error parse variable expr %s", err.Error())
+					return nil
+				}
+				variables[varname] = value
+			}
 		}
 	}
 
-	// add task defined actions by yaml, if user was set
+	// TODO: check the custom functions
+	// add task defined actions by yaml, if user's was set
 	if task.GetFunctions() != nil {
 		functions := task.GetFunctions()
-		namespaces = append(namespaces, namespace.NewNamespace(types.CUSTOM, functions))
+		namespaces = append(namespaces, namespace.NewNamespace(types.NamespaceType(task.GetName()), functions))
 	}
 
 	// set callback function
@@ -101,15 +104,27 @@ func NewState(
 	}
 	s.onEventCallback = onEventCallback
 
-	// create storages by namespaces
+	// create storages by namespaces, if storages descriptor have it by each namespaces
 	for _, namespace := range namespaces {
-		// if storages nil, set to newstorage by namespace
-		if namespace.GetStorages() == nil {
-			newStorage := storage.NewStorage(namespace.GetName(), namespace.GetStorageType(), onEventCallback)
-			namespace.SetStorage(newStorage)
-			storages[namespace.GetName()] = newStorage
+		if namespace.GetStrorageDescriptor() != nil {
+			for _, storageDescriptor := range namespace.GetStrorageDescriptor() {
+				if _, exists := storages[storageDescriptor.Name()]; !exists {
+					newStorage := storage.NewStorage(storageDescriptor.Name(), storageDescriptor.Type(), onEventCallback)
+
+					if storageDescriptor.Predefined() != nil {
+						for key, value := range storageDescriptor.Predefined() {
+							newStorage.AddData(key, *value)
+						}
+					}
+
+					namespace.SetStorage(newStorage)
+					storages[storageDescriptor.Name()] = newStorage
+				}
+			}
 		}
 	}
+
+	// if the goal namespace is enabled, set the current goal
 	for key, storage := range storages {
 		if key == "goal" {
 			prompt := task.GetPrompt()

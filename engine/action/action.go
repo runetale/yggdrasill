@@ -13,6 +13,9 @@ type Action interface {
 	Name() string
 	StorageType() types.StorageType
 	Predefined() *map[string]string
+	// namespace description
+	NamespaceDescription() string
+	// namespace action description
 	Description() string
 	Run(s *storage.Storage, attributes map[string]string, payload string) string
 	Timeout() *time.Duration

@@ -117,10 +117,10 @@ func actionsForState(state *state.State) (string, error) {
 	var builder strings.Builder
 
 	for _, group := range state.GetNamespaces() {
-		builder.WriteString(fmt.Sprintf("## %s\n\n", group.GetName()))
+		builder.WriteString(fmt.Sprintf("## %s\n\n", group.Name()))
 
-		if group.GetDescription() != "" {
-			builder.WriteString(fmt.Sprintf("%s\n\n", group.GetDescription()))
+		if group.Description() != "" {
+			builder.WriteString(fmt.Sprintf("%s\n\n", group.Description()))
 		}
 
 		for _, action := range group.GetActions() {

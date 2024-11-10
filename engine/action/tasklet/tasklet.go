@@ -77,3 +77,9 @@ func (s *Tasklet) RequiresUserConfirmation() bool {
 func (s *Tasklet) GetNamespace() types.NamespaceType {
 	return types.TASKLET
 }
+
+func (s *Tasklet) NamespaceDescription() string {
+	filepath := "ns.prompt"
+	data, _ := os.ReadFile(filepath)
+	return string(data)
+}
