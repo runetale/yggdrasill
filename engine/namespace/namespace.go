@@ -37,11 +37,13 @@ func NewNamespace(ns types.NamespaceType, functions []*task.Function,
 		name = "Shell"
 		description = s.NamespaceDescription()
 		actions = append(actions, s)
+		descriptors = append(descriptors, NewStorageDescriptor("shell", types.UNTAGGED, nil))
 	case types.TASKLET:
 		t := tasklet.NewTasklet()
 		name = "Task"
 		description = t.NamespaceDescription()
 		actions = append(actions, t)
+		descriptors = append(descriptors, NewStorageDescriptor("tasklet", types.UNTAGGED, nil))
 	case types.GOAL:
 		g := goal.NewGoal()
 		name = "Goal"
@@ -70,7 +72,6 @@ func NewNamespace(ns types.NamespaceType, functions []*task.Function,
 		actions = append(actions, sc)
 		actions = append(actions, sic)
 		descriptors = append(descriptors, NewStorageDescriptor("plan", types.COMPLETION, nil))
-
 	case types.HTTP:
 		predefined := map[string]string{}
 		predefined["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"

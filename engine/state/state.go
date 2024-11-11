@@ -116,6 +116,7 @@ func NewState(
 							newStorage.AddData(key, *value)
 						}
 					}
+					log.Printf("create storage [%s]\n", storageDescriptor.Name())
 					storages[storageDescriptor.Name()] = newStorage
 				}
 			}
