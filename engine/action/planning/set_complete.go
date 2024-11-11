@@ -12,23 +12,10 @@ import (
 )
 
 type SetComplete struct {
-	storageType types.StorageType
-	predefined  *map[string]string
 }
 
 func NewSetComplete() action.Action {
-	return &SetComplete{
-		storageType: types.COMPLETION,
-		predefined:  nil,
-	}
-}
-
-func (s *SetComplete) StorageType() types.StorageType {
-	return s.storageType
-}
-
-func (s *SetComplete) Predefined() *map[string]string {
-	return s.predefined
+	return &SetComplete{}
 }
 
 func (s *SetComplete) Name() string {

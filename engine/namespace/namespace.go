@@ -4,6 +4,7 @@ import (
 	"github.com/runetale/notch/engine/action"
 	"github.com/runetale/notch/engine/action/goal"
 	"github.com/runetale/notch/engine/action/memory"
+	"github.com/runetale/notch/engine/action/planning"
 	"github.com/runetale/notch/engine/action/shell"
 	"github.com/runetale/notch/engine/action/tasklet"
 	"github.com/runetale/notch/task"
@@ -85,6 +86,21 @@ func NewNamespace(ns types.NamespaceType, functions []*task.Function,
 		actions = append(actions, sm)
 		actions = append(actions, dm)
 		descriptors = append(descriptors, NewStorageDescriptor("memories", types.TAGGED, nil))
+	case types.PLANNING:
+		as := planning.NewAddStep()
+		ds := planning.NewDeleteStep()
+		c := planning.NewClear()
+		sc := planning.NewSetComplete()
+		sic := planning.NewSetInComplete()
+		name = "Planning"
+		description = as.NamespaceDescription()
+		actions = append(actions, as)
+		actions = append(actions, ds)
+		actions = append(actions, c)
+		actions = append(actions, sc)
+		actions = append(actions, sic)
+		descriptors = append(descriptors, NewStorageDescriptor("plan", types.COMPLETION, nil))
+
 	case types.HTTP:
 		predefined := map[string]string{}
 		predefined["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"

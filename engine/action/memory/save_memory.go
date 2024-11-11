@@ -10,23 +10,10 @@ import (
 )
 
 type SaveMemory struct {
-	storageType types.StorageType
-	predefined  *map[string]string
 }
 
 func NewSaveMemroy() action.Action {
-	return &SaveMemory{
-		storageType: types.TAGGED,
-		predefined:  nil,
-	}
-}
-
-func (m *SaveMemory) StorageType() types.StorageType {
-	return m.storageType
-}
-
-func (m *SaveMemory) Predefined() *map[string]string {
-	return m.predefined
+	return &SaveMemory{}
 }
 
 func (m *SaveMemory) Name() string {

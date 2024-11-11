@@ -15,23 +15,10 @@ import (
 )
 
 type Shell struct {
-	storageType types.StorageType
-	predefined  *map[string]string
 }
 
 func NewShell() action.Action {
-	return &Shell{
-		storageType: types.UNTAGGED,
-		predefined:  nil,
-	}
-}
-
-func (s *Shell) StorageType() types.StorageType {
-	return s.storageType
-}
-
-func (s *Shell) Predefined() *map[string]string {
-	return s.predefined
+	return &Shell{}
 }
 
 func (s *Shell) Name() string {

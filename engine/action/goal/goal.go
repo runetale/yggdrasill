@@ -10,23 +10,10 @@ import (
 )
 
 type Goal struct {
-	storageType types.StorageType
-	predefined  *map[string]string
 }
 
 func NewGoal() action.Action {
-	return &Goal{
-		storageType: types.UNTAGGED,
-		predefined:  nil,
-	}
-}
-
-func (d *Goal) StorageType() types.StorageType {
-	return d.storageType
-}
-
-func (d *Goal) Predefined() *map[string]string {
-	return d.predefined
+	return &Goal{}
 }
 
 func (d *Goal) Name() string {

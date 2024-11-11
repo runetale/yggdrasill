@@ -11,8 +11,6 @@ import (
 type Action interface {
 	GetNamespace() types.NamespaceType
 	Name() string
-	StorageType() types.StorageType
-	Predefined() *map[string]string
 	// namespace description
 	NamespaceDescription() string
 	// namespace action description

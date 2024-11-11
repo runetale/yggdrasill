@@ -10,23 +10,10 @@ import (
 )
 
 type AddStep struct {
-	storageType types.StorageType
-	predefined  *map[string]string
 }
 
 func NewAddStep() action.Action {
-	return &AddStep{
-		storageType: types.COMPLETION,
-		predefined:  nil,
-	}
-}
-
-func (a *AddStep) StorageType() types.StorageType {
-	return a.storageType
-}
-
-func (a *AddStep) Predefined() *map[string]string {
-	return a.predefined
+	return &AddStep{}
 }
 
 func (a *AddStep) Name() string {

@@ -10,23 +10,10 @@ import (
 )
 
 type Clear struct {
-	storageType types.StorageType
-	predefined  *map[string]string
 }
 
 func NewClear() action.Action {
-	return &Clear{
-		storageType: types.COMPLETION,
-		predefined:  nil,
-	}
-}
-
-func (c *Clear) StorageType() types.StorageType {
-	return c.storageType
-}
-
-func (c *Clear) Predefined() *map[string]string {
-	return c.predefined
+	return &Clear{}
 }
 
 func (a *Clear) Name() string {

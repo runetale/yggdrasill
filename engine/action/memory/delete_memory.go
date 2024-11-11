@@ -10,23 +10,10 @@ import (
 )
 
 type DeleteMemory struct {
-	storageType types.StorageType
-	predefined  *map[string]string
 }
 
 func NewDeleteMemory() action.Action {
-	return &DeleteMemory{
-		storageType: types.TAGGED,
-		predefined:  nil,
-	}
-}
-
-func (m *DeleteMemory) StorageType() types.StorageType {
-	return m.storageType
-}
-
-func (m *DeleteMemory) Predefined() *map[string]string {
-	return m.predefined
+	return &DeleteMemory{}
 }
 
 func (m *DeleteMemory) Name() string {

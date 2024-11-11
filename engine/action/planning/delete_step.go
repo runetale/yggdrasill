@@ -11,23 +11,10 @@ import (
 )
 
 type DeleteStep struct {
-	storageType types.StorageType
-	predefined  *map[string]string
 }
 
 func NewDeleteStep() action.Action {
-	return &DeleteStep{
-		storageType: types.COMPLETION,
-		predefined:  nil,
-	}
-}
-
-func (a *DeleteStep) StorageType() types.StorageType {
-	return a.storageType
-}
-
-func (a *DeleteStep) Predefined() *map[string]string {
-	return a.predefined
+	return &DeleteStep{}
 }
 
 func (a *DeleteStep) Name() string {
