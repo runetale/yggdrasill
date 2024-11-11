@@ -65,7 +65,7 @@ func (a *Clear) RequiresUserConfirmation() bool {
 }
 
 func (a *Clear) GetNamespace() types.NamespaceType {
-	return types.GOAL
+	return types.PLANNING
 }
 
 func (a *Clear) NamespaceDescription() string {

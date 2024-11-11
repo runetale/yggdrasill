@@ -71,7 +71,7 @@ func (s *SetInComplete) RequiresUserConfirmation() bool {
 }
 
 func (s *SetInComplete) GetNamespace() types.NamespaceType {
-	return types.GOAL
+	return types.PLANNING
 }
 
 func (s *SetInComplete) NamespaceDescription() string {

@@ -66,7 +66,7 @@ func (a *AddStep) RequiresUserConfirmation() bool {
 }
 
 func (a *AddStep) GetNamespace() types.NamespaceType {
-	return types.GOAL
+	return types.PLANNING
 }
 
 func (a *AddStep) NamespaceDescription() string {
