@@ -17,7 +17,7 @@ type DeleteStep struct {
 
 func NewDeleteStep() action.Action {
 	return &DeleteStep{
-		storageType: types.UNTAGGED,
+		storageType: types.COMPLETION,
 		predefined:  nil,
 	}
 }

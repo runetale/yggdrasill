@@ -18,7 +18,7 @@ type SetComplete struct {
 
 func NewSetComplete() action.Action {
 	return &SetComplete{
-		storageType: types.UNTAGGED,
+		storageType: types.COMPLETION,
 		predefined:  nil,
 	}
 }

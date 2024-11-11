@@ -16,7 +16,7 @@ type AddStep struct {
 
 func NewAddStep() action.Action {
 	return &AddStep{
-		storageType: types.UNTAGGED,
+		storageType: types.COMPLETION,
 		predefined:  nil,
 	}
 }
