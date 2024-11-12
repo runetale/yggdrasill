@@ -32,10 +32,10 @@ type StateUpdateEvent struct {
 	systemPrompt string
 	prompt       string
 	history      string
-	savePath     *string
+	savePath     string
 }
 
-func NewStateUpdateEvent(sys, prom, his string, savePath *string) DisplayEvent {
+func NewStateUpdateEvent(sys, prom, his string, savePath string) DisplayEvent {
 	return &StateUpdateEvent{
 		systemPrompt: sys,
 		prompt:       prom,
@@ -46,7 +46,7 @@ func NewStateUpdateEvent(sys, prom, his string, savePath *string) DisplayEvent {
 
 func (e *StateUpdateEvent) Display() string {
 	data := ""
-	if e.savePath != nil {
+	if e.savePath != "'" {
 		data = fmt.Sprintf(
 			"[SYSTEM PROMPT]\n\n%s\n\n[PROMPT]\n\n%s\n\n[CHAT]\n\n%s",
 			e.systemPrompt,
@@ -54,9 +54,9 @@ func (e *StateUpdateEvent) Display() string {
 			e.history,
 		)
 
-		err := os.WriteFile(*e.savePath, []byte(data), 0644)
+		err := os.WriteFile(e.savePath, []byte(data), 0644)
 		if err != nil {
-			log.Printf("Error writing to %s: %v", *e.savePath, err)
+			log.Printf("Error writing to %s: %v", e.savePath, err)
 		}
 	}
 	return data

@@ -25,12 +25,12 @@ type Engine struct {
 	task       *task.Task
 	timeout    *time.Duration
 	nativeTool bool
-	saveTo     *string
+	saveTo     string
 
 	waitCh chan struct{}
 }
 
-func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool bool, saveTo *string) *Engine {
+func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool bool, saveTo string) *Engine {
 	channel := events.NewChannel()
 
 	serializationInvocationCb := func(inv *chat.Invocation) *string {
