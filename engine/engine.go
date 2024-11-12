@@ -51,15 +51,11 @@ func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool b
 func (e *Engine) Start() {
 	go e.consumeEvent()
 	go e.automaton()
-
-	// waiting terminated engine process
-	<-e.state.Complete()
-	log.Printf("shutdown...")
-	close(e.waitCh)
 }
 
 func (e *Engine) Stop() {
-	e.state.Close()
+	log.Printf("shutdown...")
+	close(e.waitCh)
 }
 
 func (e *Engine) Done() <-chan struct{} {
@@ -71,16 +67,17 @@ func (e *Engine) consumeEvent() {
 	for {
 		// waiting event cahn for each events
 		event := <-e.channel.Chan
-		log.Printf("consumed '%s' %s does %s", event.EventType(), event.Name(), event.Happened())
 		switch event.EventType() {
 		case events.MetricsUpdate:
 		case events.StorageUpdate:
 		case events.StateUpdate:
+			log.Printf("consumed '%s' %s does %s", event.EventType(), event.Name(), event.Happened())
 		case events.InvalidUpdate:
 		case events.InvalidAction:
 		case events.InvalidResponse:
 		case events.ActionTimeOut:
 		case events.ActionExecuted:
+			log.Printf("consumed '%s' %s does %s", event.EventType(), event.Name(), event.Happened())
 		case events.TaskComplete:
 		case events.EmptyResponse:
 		}

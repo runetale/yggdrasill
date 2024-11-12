@@ -145,14 +145,6 @@ func NewState(
 	return s
 }
 
-func (s *State) Complete() <-chan bool {
-	return s.complete
-}
-
-func (s *State) Close() {
-	s.complete <- true
-}
-
 // called from engine
 func (s *State) OnEvent(event *events.Event) {
 	s.onEventCallback(event)

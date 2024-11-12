@@ -94,9 +94,10 @@ func exec(ctx context.Context, args []string) error {
 		for {
 			select {
 			case <-interrupt:
+				log.Println("received terminate signal")
 				e.Stop()
 			case <-e.Done():
-				close(ch)
+				ch <- struct{}{}
 				log.Printf("shutdown completed notch")
 			}
 		}
