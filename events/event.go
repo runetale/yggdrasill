@@ -29,13 +29,15 @@ type StateUpdateEvent struct {
 	systemPrompt string
 	prompt       string
 	history      string
+	savePath     string
 }
 
-func NewStateUpdateEvent(sys, prom, his string) DisplayEvent {
+func NewStateUpdateEvent(sys, prom, his, savePath string) DisplayEvent {
 	return &StateUpdateEvent{
 		systemPrompt: sys,
 		prompt:       prom,
 		history:      his,
+		savePath:     savePath,
 	}
 }
 

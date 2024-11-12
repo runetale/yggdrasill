@@ -25,11 +25,12 @@ type Engine struct {
 	task       *task.Task
 	timeout    *time.Duration
 	nativeTool bool
+	saveTo     string
 
 	waitCh chan struct{}
 }
 
-func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool bool) *Engine {
+func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool bool, saveTo string) *Engine {
 	channel := events.NewChannel()
 
 	serializationInvocationCb := func(inv *chat.Invocation) *string {
@@ -45,7 +46,9 @@ func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool b
 		task:       t,
 		timeout:    s.GetTask().GetTimeout(),
 		nativeTool: nativeTool,
-		waitCh:     make(chan struct{}),
+		saveTo:     saveTo,
+
+		waitCh: make(chan struct{}),
 	}
 }
 
@@ -66,7 +69,7 @@ func (e *Engine) Done() <-chan struct{} {
 // for only display
 func (e *Engine) consumeEvent() {
 	for {
-		// waiting event cahn for each events
+		// waiting event chan for each events
 		event := <-e.channel.Chan
 		log.Println(event.Display())
 	}
@@ -231,11 +234,7 @@ func (e *Engine) OnUpdateState(options *chat.ChatOption, refresh bool) {
 	for i, h := range options.GetHistory() {
 		stringsList[i] = h.Display()
 	}
-	events.NewStateUpdateEvent(options.GetSystemPrompt(), options.GetPrompt(), strings.Join(stringsList, "\n"))
-}
-
-func (e *Engine) sendEvent(events events.DisplayEvent) {
-	e.state.OnEvent(events)
+	e.state.OnEvent(events.NewStateUpdateEvent(options.GetSystemPrompt(), options.GetPrompt(), strings.Join(stringsList, "\n"), e.saveTo))
 }
 
 func (e *Engine) onEmptyResponse() {

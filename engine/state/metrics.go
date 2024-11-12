@@ -28,6 +28,7 @@ func MemoryStats() uint64 {
 	runtime.ReadMemStats(&memStats)
 	return memStats.Alloc
 }
+
 func HumanBytes(bytes uint64) string {
 	if bytes < 1024 {
 		return fmt.Sprintf("%d B", bytes)

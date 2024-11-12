@@ -25,6 +25,7 @@ var notchArgs struct {
 	maxIterations int
 	strategy      string
 	forceFormat   bool
+	saveTo        string
 }
 
 type StrategyFormat string
@@ -49,6 +50,7 @@ var NotchCmd = &ffcli.Command{
 		fs.IntVar(&notchArgs.maxIterations, "max-iterations", 0, "max number of automaton to complete task, 0 is the no limit")
 		fs.StringVar(&notchArgs.strategy, "S", string(XML), "if a supported format is specified, that format is used")
 		fs.BoolVar(&notchArgs.forceFormat, "F", false, "use the fomat specified in serialisation, even if native tools are supported")
+		fs.StringVar(&notchArgs.strategy, "save", "", "at each step, the current system prompts and status data are stored in this file")
 		return fs
 	})(),
 	Exec: exec,
@@ -82,7 +84,7 @@ func exec(ctx context.Context, args []string) error {
 	log.Printf("notch v%s > 🧬 %s %s", version, notchArgs.generator, tasklet.GetName())
 
 	_, nativeTool := strategyDesicion(StrategyFormat(notchArgs.strategy), notchArgs.forceFormat, factory)
-	e := engine.NewEngine(tasklet, factory, uint(notchArgs.maxIterations), nativeTool)
+	e := engine.NewEngine(tasklet, factory, uint(notchArgs.maxIterations), nativeTool, notchArgs.saveTo)
 
 	// start
 	go e.Start()
