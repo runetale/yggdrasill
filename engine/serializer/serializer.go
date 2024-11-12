@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/runetale/notch/engine/action"
+	"github.com/runetale/notch/engine/chat"
 	"github.com/runetale/notch/engine/state"
-	"github.com/runetale/notch/llm"
 	"github.com/runetale/notch/storage"
 )
 
@@ -134,7 +134,7 @@ func actionsForState(state *state.State) (string, error) {
 	return builder.String(), nil
 }
 
-func SerializeInvocation(inv *llm.Invocation) *string {
+func SerializeInvocation(inv *chat.Invocation) *string {
 	invocation := parseInvocation(inv)
 	return &invocation
 }
@@ -147,9 +147,9 @@ func serializeStorage(s *storage.Storage) string {
 	return paraseStorage(s)
 }
 
-func TryParse(raw string) []*llm.Invocation {
+func TryParse(raw string) []*chat.Invocation {
 	ptr := raw
-	var parsedInvocations []*llm.Invocation
+	var parsedInvocations []*chat.Invocation
 	uniqueMap := make(map[string]bool)
 
 	for {

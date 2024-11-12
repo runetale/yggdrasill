@@ -6,9 +6,9 @@ import (
 	"log"
 
 	"github.com/runetale/notch/engine/action"
-	"github.com/runetale/notch/engine/events"
+	"github.com/runetale/notch/engine/chat"
 	"github.com/runetale/notch/engine/namespace"
-	"github.com/runetale/notch/llm"
+	"github.com/runetale/notch/events"
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/task"
 	"github.com/runetale/notch/types"
@@ -29,7 +29,7 @@ type State struct {
 	onEventCallback func(event *events.Event)
 
 	// serialize callback function
-	SerializeInvocation func(inv *llm.Invocation) *string
+	SerializeInvocation func(inv *chat.Invocation) *string
 
 	metrics *Metrics
 }
@@ -39,7 +39,7 @@ func NewState(
 	sender *events.Channel,
 	task *task.Task,
 	maxIterations uint,
-	serializationInvocation func(inv *llm.Invocation) *string,
+	serializationInvocation func(inv *chat.Invocation) *string,
 ) *State {
 	namespaces := make([]*namespace.Namespace, 0)
 	storages := make(map[string]*storage.Storage, 0)
@@ -123,11 +123,11 @@ func NewState(
 	}
 
 	// if the goal namespace is enabled, set the current goal
-	for key, storage := range storages {
+	for key, s := range storages {
 		if key == "goal" {
 			prompt := task.GetPrompt()
 			log.Printf("set goal prompt => '%s'\n", prompt)
-			storage.SetCurrent(prompt)
+			s.SetCurrent(prompt)
 		}
 	}
 
@@ -182,16 +182,16 @@ func (s *State) AddUnparsedResponseToHistory(response string, err string) {
 	s.history = append(s.history, NewExecution(&response, nil, nil, &err))
 }
 
-func (s *State) AddSuccessToHistory(invocation *llm.Invocation, result *string) {
+func (s *State) AddSuccessToHistory(invocation *chat.Invocation, result *string) {
 	s.history = append(s.history, NewExecution(nil, invocation, result, nil))
 }
 
-func (s *State) AddErrorToHistory(invocation *llm.Invocation, err *string) {
+func (s *State) AddErrorToHistory(invocation *chat.Invocation, err *string) {
 	s.history = append(s.history, NewExecution(nil, invocation, nil, err))
 }
 
 // when this function called from `first chat“ and `on state update`
-func (s *State) ToChatHistory(max int) []*llm.Message {
+func (s *State) ToChatHistory(max int) []*chat.Message {
 	var latest []*Execution
 	if len(s.history) > max {
 		latest = s.history[:max+1]
@@ -204,18 +204,19 @@ func (s *State) ToChatHistory(max int) []*llm.Message {
 	}
 
 	// to messages
-	history := []*llm.Message{}
+	// todo: historyの内容が正しいか？
+	history := []*chat.Message{}
 	for _, entry := range latest {
 		// agent messages
 		if entry.Response != nil {
-			history = append(history, &llm.Message{
-				MessageType: llm.AGETNT,
+			history = append(history, &chat.Message{
+				MessageType: chat.AGETNT,
 				Response:    entry.Response,
 				Invocation:  nil,
 			})
 		} else if entry.Invocation != nil {
-			history = append(history, &llm.Message{
-				MessageType: llm.AGETNT,
+			history = append(history, &chat.Message{
+				MessageType: chat.AGETNT,
 				// parse to invocation to string,
 				// to including the results of executing a "function call" when executing factory.Chat()
 				Response:   s.SerializeInvocation(entry.Invocation),
@@ -233,8 +234,8 @@ func (s *State) ToChatHistory(max int) []*llm.Message {
 			res = ""
 		}
 
-		history = append(history, &llm.Message{
-			MessageType: llm.FEEDBACK,
+		history = append(history, &chat.Message{
+			MessageType: chat.FEEDBACK,
 			Response:    &res,
 			Invocation:  entry.Invocation,
 		})
@@ -249,7 +250,7 @@ func (s *State) IncrementEmptyMetrics() {
 }
 
 func (s *State) IncrementUnparsedMetrics() {
-	s.metrics.errors.unparsedResonses += 1
+	s.metrics.errors.unparsedResponses += 1
 }
 
 func (s *State) IncrementUnknownMetrics() {
@@ -287,4 +288,8 @@ func (s *State) GetAciton(actionName string) action.Action {
 		}
 	}
 	return nil
+}
+
+func (s *State) DisplayMetrics() string {
+	return s.metrics.Display()
 }

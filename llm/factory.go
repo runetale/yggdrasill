@@ -4,11 +4,12 @@ package llm
 import (
 	"errors"
 
+	"github.com/runetale/notch/engine/chat"
 	"github.com/runetale/notch/engine/namespace"
 )
 
 type LLMClientImpl interface {
-	Chat(option *ChatOption, nativeSupport bool, namespaces []*namespace.Namespace) ([]*Invocation, string)
+	Chat(option *chat.ChatOption, nativeSupport bool, namespaces []*namespace.Namespace) ([]*chat.Invocation, string)
 	CheckNatvieToolSupport() bool
 }
 
@@ -52,7 +53,7 @@ func newLLMFactory(llmType LLMTypeName, options LLMOptions, apiKey string) (LLMC
 	return nil, errors.New("not suuported llm")
 }
 
-func (c *LLMFactory) Chat(options *ChatOption, nativeSupport bool, namespaces []*namespace.Namespace) ([]*Invocation, string) {
+func (c *LLMFactory) Chat(options *chat.ChatOption, nativeSupport bool, namespaces []*namespace.Namespace) ([]*chat.Invocation, string) {
 	return c.client.Chat(options, nativeSupport, namespaces)
 }
 

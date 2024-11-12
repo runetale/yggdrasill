@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/runetale/notch/engine/chat"
 	"github.com/runetale/notch/engine/namespace"
 	"github.com/sashabaranov/go-openai"
 )
@@ -83,7 +84,7 @@ func NewOpenAIClient(model string, apikey string, url string, port uint16) LLMCl
 	}
 }
 
-func (o *OpenAIClient) Chat(option *ChatOption, nativeSupport bool, namespaces []*namespace.Namespace) ([]*Invocation, string) {
+func (o *OpenAIClient) Chat(option *chat.ChatOption, nativeSupport bool, namespaces []*namespace.Namespace) ([]*chat.Invocation, string) {
 	chathistory := []openai.ChatCompletionMessage{
 		{
 			Role:      openai.ChatMessageRoleSystem,
@@ -101,13 +102,13 @@ func (o *OpenAIClient) Chat(option *ChatOption, nativeSupport bool, namespaces [
 	if option.GetHistory() != nil {
 		for _, m := range option.GetHistory() {
 			switch m.MessageType {
-			case AGETNT:
+			case chat.AGETNT:
 				chathistory = append(chathistory, openai.ChatCompletionMessage{
 					Role:      openai.ChatMessageRoleAssistant,
 					Content:   *m.Response,
 					ToolCalls: nil,
 				})
-			case FEEDBACK:
+			case chat.FEEDBACK:
 				chathistory = append(chathistory, openai.ChatCompletionMessage{
 					Role:      openai.ChatMessageRoleUser,
 					Content:   *m.Response,
@@ -119,6 +120,7 @@ func (o *OpenAIClient) Chat(option *ChatOption, nativeSupport bool, namespaces [
 
 	// add native tools function
 	// setting each namespaces actions,
+	// todo: toolsの内容が正しいか？
 	tools := []openai.Tool{}
 	if nativeSupport {
 		for _, group := range namespaces {
@@ -193,7 +195,7 @@ func (o *OpenAIClient) Chat(option *ChatOption, nativeSupport bool, namespaces [
 		})
 	}
 
-	invocations := make([]*Invocation, 0)
+	invocations := make([]*chat.Invocation, 0)
 	for _, tool := range toolCalls {
 		attributes := make(map[string]string, 0)
 		payload := ""
@@ -212,7 +214,7 @@ func (o *OpenAIClient) Chat(option *ChatOption, nativeSupport bool, namespaces [
 			}
 		}
 
-		in := NewInvocation(tool.function.name, attributes, &payload)
+		in := chat.NewInvocation(tool.function.name, attributes, &payload)
 
 		invocations = append(invocations, in)
 	}

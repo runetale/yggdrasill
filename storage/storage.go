@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/runetale/notch/engine/events"
+	"github.com/runetale/notch/events"
 	"github.com/runetale/notch/types"
 )
 

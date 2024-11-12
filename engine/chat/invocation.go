@@ -1,6 +1,6 @@
 // invocation use by engine, parsed `llm toolcalls` to invocation
 // that's simply llm action
-package llm
+package chat
 
 import (
 	"fmt"

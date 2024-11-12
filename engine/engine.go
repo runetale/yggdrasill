@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/runetale/notch/engine/action"
-	"github.com/runetale/notch/engine/events"
+	"github.com/runetale/notch/engine/chat"
 	"github.com/runetale/notch/engine/serializer"
 	"github.com/runetale/notch/engine/state"
+	"github.com/runetale/notch/events"
 	"github.com/runetale/notch/llm"
 	"github.com/runetale/notch/task"
 )
@@ -31,7 +32,7 @@ type Engine struct {
 func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool bool) *Engine {
 	channel := events.NewChannel()
 
-	serializationInvocationCb := func(inv *llm.Invocation) *string {
+	serializationInvocationCb := func(inv *chat.Invocation) *string {
 		return serializer.SerializeInvocation(inv)
 	}
 	s := state.NewState(channel, t, maxIterations, serializationInvocationCb)
@@ -69,6 +70,7 @@ func (e *Engine) consumeEvent() {
 		event := <-e.channel.Chan
 		switch event.EventType() {
 		case events.MetricsUpdate:
+			log.Println(e.state.DisplayMetrics())
 		case events.StorageUpdate:
 		case events.StateUpdate:
 			log.Printf("consumed '%s' %s does %s", event.EventType(), event.Name(), event.Happened())
@@ -93,7 +95,7 @@ func (e *Engine) automaton() {
 		e.OnUpdateState(option, false)
 
 		// response from llm
-		var invocations []*llm.Invocation
+		var invocations []*chat.Invocation
 		toolCalls, response := e.factory.Chat(option, e.nativeTool, e.state.GetNamespaces())
 
 		// use our strategy
@@ -182,6 +184,7 @@ func (e *Engine) automaton() {
 }
 
 func (e *Engine) timeoutRun(ac action.Action, timeout time.Duration, attributes map[string]string, payload string) (string, error) {
+	fmt.Printf("run for %s\n", ac.Name())
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -208,7 +211,7 @@ func (e *Engine) GetTimeout(ac action.Action) time.Duration {
 	return defaultTimeout
 }
 
-func (e *Engine) prepareAutomaton() *llm.ChatOption {
+func (e *Engine) prepareAutomaton() *chat.ChatOption {
 	e.state.OnEvent(events.NewEvent(events.MetricsUpdate, "engine", "prepare-automaton"))
 	// get system prompt by state
 	systemPrompt, err := serializer.DisplaySystemPrompt(e.state)
@@ -222,10 +225,10 @@ func (e *Engine) prepareAutomaton() *llm.ChatOption {
 	// to chat history, return the history of messsagesb by maxHistory count
 	history := e.state.ToChatHistory(int(e.maxHistory))
 
-	return llm.NewChatOption(systemPrompt, prompt, history)
+	return chat.NewChatOption(systemPrompt, prompt, history)
 }
 
-func (e *Engine) OnUpdateState(options *llm.ChatOption, refresh bool) {
+func (e *Engine) OnUpdateState(options *chat.ChatOption, refresh bool) {
 	if refresh {
 		// update prompt
 		sysprompt, err := serializer.DisplaySystemPrompt(e.state)
@@ -265,25 +268,25 @@ func (e *Engine) onValidAction() {
 	e.state.IncrementValidActionsMetrics()
 }
 
-func (e *Engine) onInvalidAction(inv *llm.Invocation, err *string) {
+func (e *Engine) onInvalidAction(inv *chat.Invocation, err *string) {
 	e.state.IncrementUnknownMetrics()
 	e.state.AddErrorToHistory(inv, err)
 	e.state.OnEvent(events.NewEvent(events.InvalidAction, "engine", fmt.Sprintf("on-invalid-action %s", err)))
 }
 
-func (e *Engine) onExecutedErrorAction(inv *llm.Invocation, err *string, start time.Duration) {
+func (e *Engine) onExecutedErrorAction(inv *chat.Invocation, err *string, start time.Duration) {
 	e.state.IncrementErroredActionMetrics()
 	e.state.AddErrorToHistory(inv, err)
 	e.state.OnEvent(events.NewEvent(events.ActionExecuted, "engine", "on-executed-error-action"))
 }
 
-func (e *Engine) onExecutedSuccessAction(inv *llm.Invocation, result *string, start time.Duration) {
+func (e *Engine) onExecutedSuccessAction(inv *chat.Invocation, result *string, start time.Duration) {
 	e.state.IncrementSuccessActionMetrics()
 	e.state.AddSuccessToHistory(inv, result)
 	e.state.OnEvent(events.NewEvent(events.ActionExecuted, "engine", "on-executed-success-action"))
 }
 
-func (e *Engine) onTimeoutAction(inv *llm.Invocation, start time.Duration) {
+func (e *Engine) onTimeoutAction(inv *chat.Invocation, start time.Duration) {
 	e.state.IncrementTimeoutActionMetrics()
 	err := "action time out"
 	e.state.AddErrorToHistory(inv, &err)

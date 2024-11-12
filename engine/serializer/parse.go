@@ -9,21 +9,21 @@ import (
 	"time"
 
 	"github.com/runetale/notch/engine/action"
-	"github.com/runetale/notch/llm"
+	"github.com/runetale/notch/engine/chat"
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
 
 type Parsed struct {
 	Processed   int
-	Invocations []*llm.Invocation
+	Invocations []*chat.Invocation
 }
 
 func preprocessBlock(ptr string) string {
 	return ptr
 }
 
-func buildInvocation(closingName string, element xml.StartElement, payload string) (*llm.Invocation, error) {
+func buildInvocation(closingName string, element xml.StartElement, payload string) (*chat.Invocation, error) {
 	if element.Name.Local != closingName {
 		return nil, fmt.Errorf("unexpected closing %s while parsing %s", closingName, element.Name.Local)
 	}
@@ -33,7 +33,7 @@ func buildInvocation(closingName string, element xml.StartElement, payload strin
 		attributes[attr.Name.Local] = attr.Value
 	}
 
-	return llm.NewInvocation(element.Name.Local, attributes, &payload), nil
+	return chat.NewInvocation(element.Name.Local, attributes, &payload), nil
 }
 
 func tryParseBlock(ptr string) Parsed {
@@ -84,7 +84,7 @@ func tryParseBlock(ptr string) Parsed {
 	return parsed
 }
 
-func parseInvocation(inv *llm.Invocation) string {
+func parseInvocation(inv *chat.Invocation) string {
 	var xml strings.Builder
 	xml.WriteString(fmt.Sprintf("<%s", inv.Action))
 
