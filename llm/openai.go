@@ -122,9 +122,7 @@ func (o *OpenAIClient) Chat(option *ChatOption, nativeSupport bool, namespaces [
 	tools := []openai.Tool{}
 	if nativeSupport {
 		for _, group := range namespaces {
-			log.Printf("setting up native tool functions of [%s]\n", group.Name())
 			for _, action := range group.GetActions() {
-				log.Printf("action name is [%s]\n", action.Name())
 				required := []string{}
 				properties := map[string]ToolFunctionParameterProperty{}
 

@@ -23,8 +23,7 @@ type State struct {
 	history    []*Execution // execed histories
 
 	// sent to engine.consumeEvent
-	sender   *events.Channel
-	complete chan bool
+	sender *events.Channel
 
 	// call from engine and storage
 	onEventCallback func(event *events.Event)
@@ -187,8 +186,8 @@ func (s *State) AddSuccessToHistory(invocation *llm.Invocation, result *string) 
 	s.history = append(s.history, NewExecution(nil, invocation, result, nil))
 }
 
-func (s *State) AddErrorToHistory(invocation *llm.Invocation, err string) {
-	s.history = append(s.history, NewExecution(nil, invocation, nil, &err))
+func (s *State) AddErrorToHistory(invocation *llm.Invocation, err *string) {
+	s.history = append(s.history, NewExecution(nil, invocation, nil, err))
 }
 
 // when this function called from `first chat“ and `on state update`

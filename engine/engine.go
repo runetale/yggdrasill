@@ -123,14 +123,15 @@ func (e *Engine) automaton() {
 			// found action
 			ac := e.state.GetAciton(inv.Action)
 			if ac == nil {
-				e.onInvalidAction(inv, fmt.Sprintf("cannot found action by %s", inv.Action))
+				e.onInvalidAction(inv, nil)
 				break
 			}
 
 			// validate actions
 			err := inv.ValidateAction(ac)
 			if err != nil {
-				e.onInvalidAction(inv, fmt.Sprintf("invalid action %s", err.Error()))
+				errStr := err.Error()
+				e.onInvalidAction(inv, &errStr)
 				break
 			}
 
@@ -264,7 +265,7 @@ func (e *Engine) onValidAction() {
 	e.state.IncrementValidActionsMetrics()
 }
 
-func (e *Engine) onInvalidAction(inv *llm.Invocation, err string) {
+func (e *Engine) onInvalidAction(inv *llm.Invocation, err *string) {
 	e.state.IncrementUnknownMetrics()
 	e.state.AddErrorToHistory(inv, err)
 	e.state.OnEvent(events.NewEvent(events.InvalidAction, "engine", fmt.Sprintf("on-invalid-action %s", err)))
@@ -272,7 +273,7 @@ func (e *Engine) onInvalidAction(inv *llm.Invocation, err string) {
 
 func (e *Engine) onExecutedErrorAction(inv *llm.Invocation, err *string, start time.Duration) {
 	e.state.IncrementErroredActionMetrics()
-	e.state.AddErrorToHistory(inv, *err)
+	e.state.AddErrorToHistory(inv, err)
 	e.state.OnEvent(events.NewEvent(events.ActionExecuted, "engine", "on-executed-error-action"))
 }
 
@@ -284,6 +285,7 @@ func (e *Engine) onExecutedSuccessAction(inv *llm.Invocation, result *string, st
 
 func (e *Engine) onTimeoutAction(inv *llm.Invocation, start time.Duration) {
 	e.state.IncrementTimeoutActionMetrics()
-	e.state.AddErrorToHistory(inv, "action time out")
+	err := "action time out"
+	e.state.AddErrorToHistory(inv, &err)
 	e.state.OnEvent(events.NewEvent(events.ActionTimeOut, "engine", "on-timeout-action"))
 }
