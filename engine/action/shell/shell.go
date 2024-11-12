@@ -15,23 +15,10 @@ import (
 )
 
 type Shell struct {
-	storageType types.StorageType
-	predefined  *map[string]string
 }
 
 func NewShell() action.Action {
-	return &Shell{
-		storageType: types.UNTAGGED,
-		predefined:  nil,
-	}
-}
-
-func (s *Shell) StorageType() types.StorageType {
-	return s.storageType
-}
-
-func (s *Shell) Predefined() *map[string]string {
-	return s.predefined
+	return &Shell{}
 }
 
 func (s *Shell) Name() string {
@@ -87,8 +74,8 @@ func (s *Shell) ExampleAttributes() map[string]string {
 	return nil
 }
 
-func (s *Shell) RequiredVariables() []string {
-	return []string{""}
+func (s *Shell) RequiredVariables() []*string {
+	return nil
 }
 
 func (s *Shell) RequiresUserConfirmation() bool {
@@ -97,4 +84,10 @@ func (s *Shell) RequiresUserConfirmation() bool {
 
 func (s *Shell) GetNamespace() types.NamespaceType {
 	return types.SHELL
+}
+
+func (s *Shell) NamespaceDescription() string {
+	filepath := "ns.prompt"
+	data, _ := os.ReadFile(filepath)
+	return string(data)
 }

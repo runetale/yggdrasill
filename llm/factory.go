@@ -1,10 +1,16 @@
 // openai, ollama, groq client
 package llm
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/runetale/notch/engine/chat"
+	"github.com/runetale/notch/engine/namespace"
+)
 
 type LLMClientImpl interface {
-	Chat(option *ChatOption) ([]*Invocation, string)
+	Chat(option *chat.ChatOption, nativeSupport bool, namespaces []*namespace.Namespace) ([]*chat.Invocation, string)
+	CheckNatvieToolSupport() bool
 }
 
 type LLMFactory struct {
@@ -47,6 +53,10 @@ func newLLMFactory(llmType LLMTypeName, options LLMOptions, apiKey string) (LLMC
 	return nil, errors.New("not suuported llm")
 }
 
-func (c *LLMFactory) Chat(options *ChatOption) ([]*Invocation, string) {
-	return c.client.Chat(options)
+func (c *LLMFactory) Chat(options *chat.ChatOption, nativeSupport bool, namespaces []*namespace.Namespace) ([]*chat.Invocation, string) {
+	return c.client.Chat(options, nativeSupport, namespaces)
+}
+
+func (c *LLMFactory) CheckNatvieToolSupport() bool {
+	return c.client.CheckNatvieToolSupport()
 }

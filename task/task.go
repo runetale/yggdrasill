@@ -11,32 +11,32 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type Task struct {
-	name         string
-	folder       string
-	timeout      *time.Duration
-	using        []*string  `yaml:"using"`
-	systemPrompt string     `yaml:"system_prompt"`
-	prompt       *string    `yaml:"prompt"`
-	guidance     []string   `yaml:"guidance"`
-	functions    []Function `yaml:"functions"`
+	name         string         `yaml:"-"`
+	folder       string         `yaml:"-"`
+	timeout      *time.Duration `yaml:"-"`
+	Using        []*string      `yaml:"using"`
+	SystemPrompt *string        `yaml:"system_prompt"`
+	Prompt       *string        `yaml:"prompt"`
+	Guidance     []*string      `yaml:"guidance"`
+	Functions    []*Function    `yaml:"functions"`
 }
 
 type Function struct {
-	name        string   `yaml:"name"`
-	description string   `yaml:"description"`
-	actions     []Action `yaml:"actions"`
+	Name        string   `yaml:"name"`
+	Description string   `yaml:"description"`
+	Actions     []Action `yaml:"actions"`
 }
 
 type Action struct {
-	name           string `yaml:"name"`
-	description    string `yaml:"description"`
-	tool           string `yaml:"tool"`
-	maxShownOutput int    `yaml:"max_shown_output"`
-	examplePayload string `yaml:"example_payload,omitempty"`
+	Name           string `yaml:"name"`
+	Description    string `yaml:"description"`
+	Tool           string `yaml:"tool"`
+	MaxShownOutput int    `yaml:"max_shown_output"`
+	ExamplePayload string `yaml:"example_payload,omitempty"`
 }
 
 func GetFromPath(path string) (*Task, error) {
@@ -84,20 +84,19 @@ func getFromYamlFile(filePath string) (*Task, error) {
 	tasklet.folder = filePath
 
 	return &tasklet, nil
-
 }
 
-// userPromptが無ければ入力を受け付ける
-// Promptが設定されていない場合はuserからのpromptを設定する
+// accept input if no userPrompt.
+// if no Prompt is set, set a Prompt from user
 func (t *Task) Setup(userPrompt *string) error {
 	if userPrompt == nil {
 		input := t.GetUserInput("enter task > ")
-		t.prompt = &input
+		t.Prompt = &input
 		return nil
 	}
 
-	if t.prompt == nil {
-		t.prompt = userPrompt
+	if t.Prompt == nil {
+		t.Prompt = userPrompt
 		return nil
 	}
 
@@ -105,34 +104,34 @@ func (t *Task) Setup(userPrompt *string) error {
 }
 
 func (t *Task) GetUsing() []*string {
-	return t.using
+	return t.Using
 }
 
 func (t *Task) GetPrompt() string {
-	if t.prompt != nil {
-		return *t.prompt
+	if t.Prompt != nil {
+		return *t.Prompt
 	}
 	return "no set prompt"
 }
 
 func (t *Task) GetSystemPrompt() string {
-	return t.systemPrompt
+	if t.SystemPrompt != nil {
+		return *t.SystemPrompt
+	}
+	return "none"
 }
 
 func (t *Task) GetMaxHistory() uint {
 	return 50
 }
 
-func (t *Task) GetGuidance() []string {
-	return t.guidance
+func (t *Task) GetGuidance() []*string {
+	return t.Guidance
 }
 
 // user defined yaml tasks
-func (t *Task) GetFunctions() []Function {
-	fs := t.functions
-	log.Println("Called GetFunctions")
-	log.Println(fs)
-	return t.functions
+func (t *Task) GetFunctions() []*Function {
+	return t.Functions
 }
 
 func (*Task) GetUserInput(prompt string) string {

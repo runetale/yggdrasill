@@ -11,13 +11,13 @@ import (
 type Action interface {
 	GetNamespace() types.NamespaceType
 	Name() string
-	StorageType() types.StorageType
-	Predefined() *map[string]string
+	// namespace description
+	NamespaceDescription() string
+	// namespace action description
 	Description() string
 	Run(s *storage.Storage, attributes map[string]string, payload string) string
 	Timeout() *time.Duration
-	// "$SSH_HOST"などのvariablesを設定した場合に取得する
-	RequiredVariables() []string
+	RequiredVariables() []*string // retrieved when variables such as `$SSH_HOST` are set
 	RequiresUserConfirmation() bool
 	ExamplePayload() *string
 	ExampleAttributes() map[string]string

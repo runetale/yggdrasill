@@ -1,6 +1,6 @@
 // invocation use by engine, parsed `llm toolcalls` to invocation
 // that's simply llm action
-package llm
+package chat
 
 import (
 	"fmt"
@@ -20,6 +20,9 @@ func NewInvocation(
 	attributes map[string]string,
 	payload *string,
 ) *Invocation {
+	if len(attributes) == 0 {
+		attributes = nil
+	}
 	return &Invocation{
 		Action:     action,
 		Attributes: attributes,
@@ -58,7 +61,6 @@ func (inv *Invocation) ValidateAction(ac action.Action) error {
 		return fmt.Errorf("no attributes needed for '%s'", inv.Action)
 	}
 
-	// 必要な属性の確認
 	if attrsRequired {
 		requiredAttrs := []string{}
 		for key := range ac.ExampleAttributes() {

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/runetale/notch/engine/events"
+	"github.com/runetale/notch/events"
 	"github.com/runetale/notch/types"
 )
 
@@ -32,11 +32,11 @@ type Storage struct {
 	storageType types.StorageType
 	entry       map[string]*Entry
 
-	OnEventCallback func(event *events.Event)
+	OnEventCallback func(event events.DisplayEvent)
 }
 
 func NewStorage(name string, storageType types.StorageType,
-	OnEventCallback func(event *events.Event),
+	OnEventCallback func(event events.DisplayEvent),
 ) *Storage {
 	entry := make(map[string]*Entry, 0)
 
@@ -92,28 +92,29 @@ func (s *Storage) GetStartedAt() time.Time {
 	return s.entry[STARTED_AT_TAG].Time
 }
 
-func (s *Storage) OnEvent(event *events.Event) {
+func (s *Storage) OnEvent(event events.DisplayEvent) {
 	s.OnEventCallback(event)
 }
 
 func (s *Storage) AddData(key, data string) {
 	s.entry[key] = NewEntry(data)
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "add-data"))
+	s.OnEvent(events.NewStorageUpdateEvent(s.name, s.storageType, key, nil, &data))
 }
 
 func (s *Storage) AddTagged(key, data string) {
 	s.entry[key] = NewEntry(data)
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "add-tagged"))
+	s.OnEvent(events.NewStorageUpdateEvent(s.name, s.storageType, key, nil, &data))
 }
 
 func (s *Storage) DelTagged(key string) {
-	s.entry[key] = nil
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "del-tagged"))
+	if old, exists := s.entry[key]; exists {
+		delete(s.entry, key)
+		s.OnEvent(events.NewStorageUpdateEvent(s.name, s.storageType, key, &old.Data, nil))
+	}
 }
 
 func (s *Storage) GetTagged(key string) string {
 	inner := s.entry[key]
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "get-tagged"))
 	return inner.Data
 }
 
@@ -127,35 +128,71 @@ func (s *Storage) AddCompletion(data string) {
 	lastKey := keys[len(keys)-1]
 	lastValue := s.entry[lastKey]
 	lastValue.Data = data
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "add-completion"))
+	s.OnEvent(events.NewStorageUpdateEvent(s.name, s.storageType, lastKey, nil, &data))
 }
 
 func (s *Storage) DelCompletion(pos int) {
 	tag := strconv.Itoa(pos)
-	s.entry[tag] = nil
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "delete-completion"))
+	if old, exists := s.entry[tag]; exists {
+		delete(s.entry, tag)
+		s.OnEvent(events.NewStorageUpdateEvent(s.name, s.storageType, tag, &old.Data, nil))
+	}
 }
 
 func (s *Storage) SetComplete(pos int) bool {
 	tag := strconv.Itoa(pos)
-	s.entry[tag].Complete = true
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "set-complete"))
-	return true
+	if entry, exists := s.entry[tag]; exists {
+		prev := entry.Complete
+		entry.Complete = true
+
+		prevState := "incomplete"
+		if prev {
+			prevState = "complete"
+		}
+		comp := "complete"
+		s.OnEvent(events.NewStorageUpdateEvent(s.name, s.storageType, tag, &prevState, &comp))
+		return prev
+	}
+
+	return false
 }
 
 func (s *Storage) SetInComplete(pos int) bool {
 	tag := strconv.Itoa(pos)
-	s.entry[tag].Complete = false
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "set-incomplete"))
-	return true
+	if entry, exists := s.entry[tag]; exists {
+		prev := entry.Complete
+		entry.Complete = false
+
+		prevState := "incomplete"
+		if prev {
+			prevState = "complete"
+		}
+		comp := "incomplete"
+		s.OnEvent(events.NewStorageUpdateEvent(s.name, s.storageType, tag, &prevState, &comp))
+		return prev
+	}
+
+	return false
 }
 
 func (s *Storage) SetCurrent(data string) {
 	s.entry[CURRENT_TAG] = NewEntry(data)
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "set-current"))
+	if s.storageType != types.CURRENTPREVIOUS {
+		panic("storage type must be CurrentPrevious")
+	}
+
+	oldCurrent, exists := s.entry[CURRENT_TAG]
+	s.entry[CURRENT_TAG] = NewEntry(data)
+
+	prev := ""
+	if exists {
+		prev = oldCurrent.Data
+		s.entry[PREVIOUS_TAG] = oldCurrent
+	}
+	s.OnEvent(events.NewStorageUpdateEvent(s.name, s.storageType, CURRENT_TAG, &prev, &data))
 }
 
-func (s *Storage) Clear(data string) {
+func (s *Storage) Clear() {
 	s.entry = make(map[string]*Entry, 0)
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, "clear-storage"))
+	s.OnEvent(events.NewStorageUpdateEvent(s.name, s.storageType, "", nil, nil))
 }

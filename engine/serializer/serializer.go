@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/runetale/notch/engine/action"
+	"github.com/runetale/notch/engine/chat"
 	"github.com/runetale/notch/engine/state"
-	"github.com/runetale/notch/llm"
 	"github.com/runetale/notch/storage"
 )
 
@@ -22,16 +22,16 @@ var actionPrompt string
 var systemPrompt string
 
 type System struct {
-	SystemPrompt     string `xml:"system_prompt"`
-	Storages         string `xml:"storages"`
-	Iterations       string `xml:"iterations"`
-	AvailableActions string `xml:"available_actions"`
-	Guidance         string `xml:"guidance"`
+	SystemPrompt     string
+	Storages         string
+	Iterations       string
+	AvailableActions string
+	Guidance         string
 }
 
 func DisplaySystemPrompt(state *state.State) (string, error) {
 	// input data to template
-	tmpl, err := template.New("prompt").ParseFiles(systemPrompt)
+	tmpl, err := template.New("prompt").Parse(systemPrompt)
 	if err != nil {
 		return "", err
 	}
@@ -41,18 +41,25 @@ func DisplaySystemPrompt(state *state.State) (string, error) {
 	sysprompt := task.GetSystemPrompt()
 
 	// storages
+	// sort
 	storages := state.GetStorages()
 	sortedStorageKeys := make([]string, 0, len(storages))
 	for key := range storages {
 		sortedStorageKeys = append(sortedStorageKeys, key)
 	}
 	sort.Strings(sortedStorageKeys)
-	storage := strings.Join(sortedStorageKeys, "\n\n")
+
+	// serialization
+	serializedStorage := []string{}
+	for _, key := range sortedStorageKeys {
+		serializedStorage = append(serializedStorage, serializeStorage(storages[key]))
+	}
+	displayStorages := strings.Join(serializedStorage, "\n\n")
 
 	// guidance
 	var formattedGuidance []string
 	for _, s := range task.GetGuidance() {
-		formattedGuidance = append(formattedGuidance, fmt.Sprintf("- %s", s))
+		formattedGuidance = append(formattedGuidance, fmt.Sprintf("- %s", *s))
 	}
 	guidance := strings.Join(formattedGuidance, "\n")
 
@@ -71,7 +78,7 @@ func DisplaySystemPrompt(state *state.State) (string, error) {
 
 	data := System{
 		SystemPrompt:     sysprompt,
-		Storages:         storage,
+		Storages:         displayStorages,
 		Iterations:       iterations,
 		AvailableActions: availableActions,
 		Guidance:         guidance,
@@ -82,7 +89,6 @@ func DisplaySystemPrompt(state *state.State) (string, error) {
 		return "", err
 	}
 
-	// 結果を出力
 	return output.String(), nil
 }
 
@@ -111,10 +117,10 @@ func actionsForState(state *state.State) (string, error) {
 	var builder strings.Builder
 
 	for _, group := range state.GetNamespaces() {
-		builder.WriteString(fmt.Sprintf("## %s\n\n", group.GetName()))
+		builder.WriteString(fmt.Sprintf("## %s\n\n", group.Name()))
 
-		if group.GetDescription() != "" {
-			builder.WriteString(fmt.Sprintf("%s\n\n", group.GetDescription()))
+		if group.Description() != "" {
+			builder.WriteString(fmt.Sprintf("%s\n\n", group.Description()))
 		}
 
 		for _, action := range group.GetActions() {
@@ -128,7 +134,7 @@ func actionsForState(state *state.State) (string, error) {
 	return builder.String(), nil
 }
 
-func SerializeInvocation(inv *llm.Invocation) *string {
+func SerializeInvocation(inv *chat.Invocation) *string {
 	invocation := parseInvocation(inv)
 	return &invocation
 }
@@ -137,13 +143,13 @@ func SerializeAction(ac action.Action) string {
 	return parseAction(ac)
 }
 
-func SerializeStorage(s *storage.Storage) string {
+func serializeStorage(s *storage.Storage) string {
 	return paraseStorage(s)
 }
 
-func TryParse(raw string) []*llm.Invocation {
+func TryParse(raw string) []*chat.Invocation {
 	ptr := raw
-	var parsedInvocations []*llm.Invocation
+	var parsedInvocations []*chat.Invocation
 	uniqueMap := make(map[string]bool)
 
 	for {

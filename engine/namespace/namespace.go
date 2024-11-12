@@ -2,88 +2,108 @@ package namespace
 
 import (
 	"github.com/runetale/notch/engine/action"
+	"github.com/runetale/notch/engine/action/goal"
+	"github.com/runetale/notch/engine/action/memory"
+	"github.com/runetale/notch/engine/action/planning"
 	"github.com/runetale/notch/engine/action/shell"
 	"github.com/runetale/notch/engine/action/tasklet"
-	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/task"
 	"github.com/runetale/notch/types"
 )
-
-type StorageDescriptor struct {
-	name        string
-	storageType types.StorageType
-	predefined  *map[string]string
-}
-
-func NewStorageDescriptor(name string, storagetype types.StorageType, predefined *map[string]string) *StorageDescriptor {
-	return &StorageDescriptor{
-		name:        name,
-		storageType: storagetype,
-		predefined:  predefined,
-	}
-}
 
 // managed all namespace actions
 type Namespace struct {
 	name        string
 	description string
-	stroages    []*storage.Storage
-	action      action.Action
 	actions     []action.Action
-	// description of storages
-	storageDescriptor *StorageDescriptor
+	// description of storages, using memory types
+	storageDescriptor []*StorageDescriptor
 }
 
 // get namespace by types.Namespacetype
-func NewNamespace(ns types.NamespaceType, functions []task.Function,
+func NewNamespace(ns types.NamespaceType, functions []*task.Function,
 ) *Namespace {
-	var ac action.Action
+	var (
+		name        string
+		description string
+	)
+
+	actions := []action.Action{}
+	descriptors := []*StorageDescriptor{}
+
 	switch ns {
 	case types.SHELL:
-		ac = shell.NewShell()
-	case types.CUSTOM:
-		ac = tasklet.NewTasklet()
+		s := shell.NewShell()
+		name = "Shell"
+		description = s.NamespaceDescription()
+		actions = append(actions, s)
+		descriptors = append(descriptors, NewStorageDescriptor("shell", types.UNTAGGED, nil))
+	case types.TASKLET:
+		t := tasklet.NewTasklet()
+		name = "Task"
+		description = t.NamespaceDescription()
+		actions = append(actions, t)
+		descriptors = append(descriptors, NewStorageDescriptor("tasklet", types.UNTAGGED, nil))
+	case types.GOAL:
+		g := goal.NewGoal()
+		name = "Goal"
+		description = g.NamespaceDescription()
+		actions = append(actions, g)
+		descriptors = append(descriptors, NewStorageDescriptor("goal", types.CURRENTPREVIOUS, nil))
+	case types.MEMORY:
+		sm := memory.NewSaveMemroy()
+		dm := memory.NewDeleteMemory()
+		name = "Memory"
+		description = sm.NamespaceDescription()
+		actions = append(actions, sm)
+		actions = append(actions, dm)
+		descriptors = append(descriptors, NewStorageDescriptor("memories", types.TAGGED, nil))
+	case types.PLANNING:
+		as := planning.NewAddStep()
+		ds := planning.NewDeleteStep()
+		c := planning.NewClear()
+		sc := planning.NewSetComplete()
+		sic := planning.NewSetInComplete()
+		name = "Planning"
+		description = as.NamespaceDescription()
+		actions = append(actions, as)
+		actions = append(actions, ds)
+		actions = append(actions, c)
+		actions = append(actions, sc)
+		actions = append(actions, sic)
+		descriptors = append(descriptors, NewStorageDescriptor("plan", types.COMPLETION, nil))
 	case types.HTTP:
 		predefined := map[string]string{}
 		predefined["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 		predefined["Accept-Encoding"] = "deflate"
 		// TODO: NewHTTP need for some pre header value
 		// ac = tasklet.NewHTTP(predefined)
+	default:
+		panic("not implemented namespaces")
 	}
-
-	sd := NewStorageDescriptor(ac.Name(), ac.StorageType(), ac.Predefined())
-
-	actions := []action.Action{}
-	actions = append(actions, ac)
 
 	return &Namespace{
-		name:              ac.Name(),
-		description:       ac.Description(),
-		stroages:          nil,
-		action:            ac,
+		name:              name,
+		description:       description,
 		actions:           actions,
-		storageDescriptor: sd,
+		storageDescriptor: descriptors,
 	}
 }
 
-func (n *Namespace) GetName() string {
-	return n.action.Name()
+func (n *Namespace) Description() string {
+	return n.description
 }
 
-func (n *Namespace) GetDescription() string {
-	return n.action.Description()
+func (n *Namespace) GetStrorageDescriptor() []*StorageDescriptor {
+	return n.storageDescriptor
 }
 
-func (n *Namespace) GetAction() action.Action {
-	return n.action
+func (n *Namespace) Name() string {
+	return n.name
 }
 
-func (n *Namespace) GetStorages() []*storage.Storage {
-	return n.stroages
-}
-
-func (n *Namespace) GetStorageType() types.StorageType {
-	return n.storageDescriptor.storageType
+func (n *Namespace) Actions() []action.Action {
+	return n.actions
 }
 
 // list of actions with action itself

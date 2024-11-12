@@ -14,6 +14,8 @@ import (
 	"github.com/runetale/notch/task"
 )
 
+const version = "0.0.1"
+
 var notchArgs struct {
 	taskpath      string
 	prompt        string
@@ -21,20 +23,32 @@ var notchArgs struct {
 	contextWindow int
 	apiKey        string
 	maxIterations int
+	strategy      string
+	forceFormat   bool
+	saveTo        *string
 }
 
+type StrategyFormat string
+
+const (
+	XML StrategyFormat = "xml"
+)
+
 var NotchCmd = &ffcli.Command{
-	Name:       "",
-	ShortUsage: "[flags]",
+	Name:       "up",
+	ShortUsage: "up [flags]",
 	ShortHelp:  "command to start notch",
 	FlagSet: (func() *flag.FlagSet {
-		fs := flag.NewFlagSet("", flag.ExitOnError)
+		fs := flag.NewFlagSet("up", flag.ExitOnError)
 		fs.StringVar(&notchArgs.taskpath, "T", "", "execute template file paths")
-		fs.StringVar(&notchArgs.taskpath, "P", "", "specify prompt, if not provided by task")
+		fs.StringVar(&notchArgs.prompt, "P", "", "specify prompt, if not provided by task")
 		fs.StringVar(&notchArgs.generator, "G", "openai://gpt-4@localhost:12321", "generator string, {provider}://{model}@{host}:{port}")
 		fs.IntVar(&notchArgs.contextWindow, "context-window", 8000, "")
 		fs.StringVar(&notchArgs.apiKey, "key", "", "api key by provider models")
 		fs.IntVar(&notchArgs.maxIterations, "max-iterations", 0, "max number of automaton to complete task, 0 is the no limit")
+		fs.StringVar(&notchArgs.strategy, "S", string(XML), "if a supported format is specified, that format is used")
+		fs.BoolVar(&notchArgs.forceFormat, "F", false, "use the fomat specified in serialisation, even if native tools are supported")
+		fs.StringVar(notchArgs.saveTo, "save", "", "at each step, the current system prompts and status data are stored in this file")
 		return fs
 	})(),
 	Exec: exec,
@@ -44,12 +58,12 @@ func exec(ctx context.Context, args []string) error {
 	// setup llm
 	options, err := llm.NewLLMOptions(notchArgs.generator, uint32(notchArgs.contextWindow))
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	factory, err := llm.NewLLMFactory(options, notchArgs.apiKey)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// TODO: add embedder for RAG
@@ -57,7 +71,7 @@ func exec(ctx context.Context, args []string) error {
 	// setup task
 	tasklet, err := task.GetFromPath(notchArgs.taskpath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = tasklet.Setup(&notchArgs.prompt)
@@ -65,25 +79,38 @@ func exec(ctx context.Context, args []string) error {
 		panic(err)
 	}
 
-	log.Printf("notch v0.0.1 🧠 gpt4-o@openai %s", tasklet.GetName())
+	log.Printf("notch v%s > 🧬 %s %s", version, notchArgs.generator, tasklet.GetName())
 
-	e := engine.NewEngine(tasklet, factory, uint(notchArgs.maxIterations))
+	_, nativeTool := strategyDesicion(StrategyFormat(notchArgs.strategy), notchArgs.forceFormat, factory)
+	e := engine.NewEngine(tasklet, factory, uint(notchArgs.maxIterations), nativeTool, notchArgs.saveTo)
 
+	// start
+	go e.Start()
+
+	ch := make(chan struct{})
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		for {
 			select {
 			case <-interrupt:
-				return
+				log.Println("received terminate signal")
+				e.Stop()
 			case <-e.Done():
-				return
+				ch <- struct{}{}
+				log.Printf("shutdown completed notch")
 			}
 		}
 	}()
-
-	// start
-	go e.Start()
+	<-ch
 
 	return nil
+}
+
+func strategyDesicion(strategy StrategyFormat, forceFormat bool, factory *llm.LLMFactory) (StrategyFormat, bool) {
+	if forceFormat {
+		log.Printf("using configured serialization strategy %s\n", strategy)
+		return strategy, false
+	}
+	return strategy, factory.CheckNatvieToolSupport()
 }

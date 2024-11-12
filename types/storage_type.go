@@ -1,11 +1,13 @@
+// tagging namespace storage type
+// using serialize storage function. e.g. display storage
 package types
 
 type StorageType string
 
 const (
-	UNTAGGED        = "untagged"
-	TAGGED          = "tagged"
-	CURRENTPREVIOUS = "current-previous"
-	COMPLETION      = "completion"
-	TIMER           = "timer"
+	UNTAGGED        StorageType = "untagged"
+	TAGGED          StorageType = "tagged"
+	CURRENTPREVIOUS StorageType = "current-previous"
+	COMPLETION      StorageType = "completion"
+	TIMER           StorageType = "timer"
 )

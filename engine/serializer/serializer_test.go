@@ -4,14 +4,14 @@ import (
 	"log"
 	"testing"
 
-	"github.com/runetale/notch/llm"
+	"github.com/runetale/notch/engine/chat"
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
 
 func Test_SerializeInvocation(t *testing.T) {
 	payload := "Hello, World!"
-	inv := llm.Invocation{
+	inv := chat.Invocation{
 		Action: "greeting",
 		Attributes: map[string]string{
 			"lang": "en",

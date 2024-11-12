@@ -1,4 +1,8 @@
-package llm
+package chat
+
+import (
+	"fmt"
+)
 
 type MessageType string
 
@@ -11,6 +15,17 @@ type Message struct {
 	MessageType MessageType
 	Response    *string
 	Invocation  *Invocation
+}
+
+func (m *Message) Display() string {
+	switch m.MessageType {
+	case AGETNT:
+		return fmt.Sprintf("[agent]\n\n%s\n", *m.Response)
+	case FEEDBACK:
+		return fmt.Sprintf("[feedback]\n\n%s\n", *m.Response)
+	default:
+		return ""
+	}
 }
 
 type ChatOption struct {
