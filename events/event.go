@@ -1,6 +1,9 @@
 package events
 
 import (
+	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"github.com/runetale/notch/types"
@@ -29,10 +32,10 @@ type StateUpdateEvent struct {
 	systemPrompt string
 	prompt       string
 	history      string
-	savePath     string
+	savePath     *string
 }
 
-func NewStateUpdateEvent(sys, prom, his, savePath string) DisplayEvent {
+func NewStateUpdateEvent(sys, prom, his string, savePath *string) DisplayEvent {
 	return &StateUpdateEvent{
 		systemPrompt: sys,
 		prompt:       prom,
@@ -42,6 +45,19 @@ func NewStateUpdateEvent(sys, prom, his, savePath string) DisplayEvent {
 }
 
 func (e *StateUpdateEvent) Display() string {
+	if e.savePath != nil {
+		data := fmt.Sprintf(
+			"[SYSTEM PROMPT]\n\n%s\n\n[PROMPT]\n\n%s\n\n[CHAT]\n\n%s",
+			e.systemPrompt,
+			e.prompt,
+			e.history,
+		)
+
+		err := os.WriteFile(*e.savePath, []byte(data), 0644)
+		if err != nil {
+			log.Printf("Error writing to %s: %v", *e.savePath, err)
+		}
+	}
 	return ""
 }
 

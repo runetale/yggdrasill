@@ -25,7 +25,7 @@ var notchArgs struct {
 	maxIterations int
 	strategy      string
 	forceFormat   bool
-	saveTo        string
+	saveTo        *string
 }
 
 type StrategyFormat string
@@ -33,8 +33,6 @@ type StrategyFormat string
 const (
 	XML StrategyFormat = "xml"
 )
-
-var sigPipe os.Signal
 
 var NotchCmd = &ffcli.Command{
 	Name:       "up",
@@ -50,7 +48,7 @@ var NotchCmd = &ffcli.Command{
 		fs.IntVar(&notchArgs.maxIterations, "max-iterations", 0, "max number of automaton to complete task, 0 is the no limit")
 		fs.StringVar(&notchArgs.strategy, "S", string(XML), "if a supported format is specified, that format is used")
 		fs.BoolVar(&notchArgs.forceFormat, "F", false, "use the fomat specified in serialisation, even if native tools are supported")
-		fs.StringVar(&notchArgs.strategy, "save", "", "at each step, the current system prompts and status data are stored in this file")
+		fs.StringVar(notchArgs.saveTo, "save", "", "at each step, the current system prompts and status data are stored in this file")
 		return fs
 	})(),
 	Exec: exec,
