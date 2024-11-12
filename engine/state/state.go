@@ -26,7 +26,7 @@ type State struct {
 	sender *events.Channel
 
 	// call from engine and storage
-	onEventCallback func(event *events.Event)
+	onEventCallback func(event events.DisplayEvent)
 
 	// serialize callback function
 	SerializeInvocation func(inv *chat.Invocation) *string
@@ -98,7 +98,7 @@ func NewState(
 	}
 
 	// set callback function
-	onEventCallback := func(event *events.Event) {
+	onEventCallback := func(event events.DisplayEvent) {
 		s.sender.Chan <- event
 	}
 	s.onEventCallback = onEventCallback
@@ -145,7 +145,7 @@ func NewState(
 }
 
 // called from engine
-func (s *State) OnEvent(event *events.Event) {
+func (s *State) OnEvent(event events.DisplayEvent) {
 	s.onEventCallback(event)
 }
 
