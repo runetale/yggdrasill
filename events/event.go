@@ -45,8 +45,9 @@ func NewStateUpdateEvent(sys, prom, his string, savePath *string) DisplayEvent {
 }
 
 func (e *StateUpdateEvent) Display() string {
+	data := ""
 	if e.savePath != nil {
-		data := fmt.Sprintf(
+		data = fmt.Sprintf(
 			"[SYSTEM PROMPT]\n\n%s\n\n[PROMPT]\n\n%s\n\n[CHAT]\n\n%s",
 			e.systemPrompt,
 			e.prompt,
@@ -58,7 +59,7 @@ func (e *StateUpdateEvent) Display() string {
 			log.Printf("Error writing to %s: %v", *e.savePath, err)
 		}
 	}
-	return ""
+	return data
 }
 
 type InvalidResponseEvent struct {
@@ -72,7 +73,7 @@ func NewInvalidResponseEvent(res string) DisplayEvent {
 }
 
 func (e *InvalidResponseEvent) Display() string {
-	return ""
+	return fmt.Sprintf("agent did not provide valid instructions\n\n%s\n\n", e.response)
 }
 
 type InvalidActionEvent struct {
@@ -88,7 +89,7 @@ func NewInvalidActionEvent(ac, err string) DisplayEvent {
 }
 
 func (e *InvalidActionEvent) Display() string {
-	return ""
+	return fmt.Sprintf("invalid action %s : %s", e.action, e.err)
 }
 
 type ActionTimeoutEvent struct {
@@ -104,7 +105,7 @@ func NewActionTimeoutEvent(ac string, elapsed time.Duration) DisplayEvent {
 }
 
 func (e *ActionTimeoutEvent) Display() string {
-	return ""
+	return fmt.Sprintf("action %s timed out after %s", e.action, e.elapsed.String())
 }
 
 type ActionExecutedEvent struct {
@@ -124,7 +125,13 @@ func NewActionExecutedEvent(inv string, err, result *string, elapsed time.Durati
 }
 
 func (e *ActionExecutedEvent) Display() string {
-	return ""
+	if e.err != nil {
+		return fmt.Sprintf("%s: %s", e.invocation, *e.err)
+	}
+	if e.result != nil {
+		return fmt.Sprintf("%s -> %s bytes in %s", e.invocation, *e.result, e.elapsed.String())
+	}
+	return fmt.Sprintf("%s %s in %s", e.invocation, "no output", e.elapsed.String())
 }
 
 type TaskCompleteEvent struct {
@@ -140,7 +147,22 @@ func NewTaskCompleteEvent(impossible bool, reason *string) DisplayEvent {
 }
 
 func (e *TaskCompleteEvent) Display() string {
-	return ""
+	reason := ""
+	if e.impossible {
+		if e.reason != nil {
+			reason = *e.reason
+		} else {
+			reason = "no reason provided"
+		}
+		return fmt.Sprintf("task is impossible: %s", reason)
+	}
+
+	if e.reason != nil {
+		reason = *e.reason
+	} else {
+		reason = "no reason provided"
+	}
+	return fmt.Sprintf("task complete: %s", reason)
 }
 
 type StorageUpdateEvent struct {
@@ -162,7 +184,16 @@ func NewStorageUpdateEvent(storageName string, t types.StorageType, key string, 
 }
 
 func (e *StorageUpdateEvent) Display() string {
-	return ""
+	if e.prev == nil && e.new == nil {
+		return fmt.Sprintf("storage.%s cleared", e.storageName)
+	}
+	if e.prev != nil && e.new == nil {
+		return fmt.Sprintf("%s.%s removed", e.storageName, e.key)
+	}
+	if e.new != nil {
+		return fmt.Sprintf("%s.%s > %s", e.storageName, e.key, *e.new)
+	}
+	return fmt.Sprintf("%s.%s prev=%s new=%s", e.storageName, e.key, *e.prev, *e.new)
 }
 
 type MetricsEvent struct {
@@ -176,7 +207,7 @@ func NewMetricsEvent(m string) DisplayEvent {
 }
 
 func (e *MetricsEvent) Display() string {
-	return ""
+	return e.metrics
 }
 
 type EmptyResponseEvent struct {
