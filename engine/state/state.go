@@ -99,7 +99,9 @@ func NewState(
 
 	// set callback function
 	onEventCallback := func(event events.DisplayEvent) {
-		s.sender.Chan <- event
+		go func() {
+			s.sender.Chan <- event
+		}()
 	}
 	s.onEventCallback = onEventCallback
 
@@ -122,6 +124,13 @@ func NewState(
 		}
 	}
 
+	// new state
+	s.task = task
+	s.namespaces = namespaces
+	s.variables = variables
+	s.history = history
+	s.storages = storages
+
 	// if the goal namespace is enabled, set the current goal
 	for key, s := range storages {
 		if key == "goal" {
@@ -131,14 +140,8 @@ func NewState(
 		}
 	}
 
+	// set metrics
 	metrics := NewMetrics(uint(maxIterations))
-
-	s.task = task
-	s.storages = storages
-	s.namespaces = namespaces
-	s.variables = variables
-	s.history = history
-	s.sender = sender
 	s.metrics = metrics
 
 	return s
