@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"sort"
 	"strconv"
 	"time"
@@ -163,8 +162,6 @@ func (s *Storage) SetCurrent(data string) {
 	if exists {
 		s.entry[PREVIOUS_TAG] = oldCurrent
 	}
-
-	s.OnEvent(events.NewEvent(events.StorageUpdate, s.name, fmt.Sprintf("set goal %s", data)))
 }
 
 func (s *Storage) Clear(data string) {

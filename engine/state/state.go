@@ -127,8 +127,7 @@ func NewState(
 	for key, storage := range storages {
 		if key == "goal" {
 			prompt := task.GetPrompt()
-			log.Println("set goal prompt")
-			log.Printf("%s\n", prompt)
+			log.Printf("set goal prompt => '%s'\n", prompt)
 			storage.SetCurrent(prompt)
 		}
 	}

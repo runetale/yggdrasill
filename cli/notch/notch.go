@@ -90,17 +90,14 @@ func exec(ctx context.Context, args []string) error {
 	ch := make(chan struct{})
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
-
 	go func() {
 		for {
 			select {
 			case <-interrupt:
 				e.Stop()
-				return
 			case <-e.Done():
 				close(ch)
 				log.Printf("shutdown completed notch")
-				return
 			}
 		}
 	}()

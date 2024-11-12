@@ -36,8 +36,6 @@ func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool b
 	}
 	s := state.NewState(channel, t, maxIterations, serializationInvocationCb)
 
-	// check using native tools
-
 	return &Engine{
 		channel:    channel,
 		factory:    c,
@@ -55,11 +53,9 @@ func (e *Engine) Start() {
 	go e.automaton()
 
 	// waiting terminated engine process
-	comp := <-e.state.Complete()
-	if comp {
-		log.Printf("shutdown...")
-		close(e.waitCh)
-	}
+	<-e.state.Complete()
+	log.Printf("shutdown...")
+	close(e.waitCh)
 }
 
 func (e *Engine) Stop() {
@@ -75,6 +71,7 @@ func (e *Engine) consumeEvent() {
 	for {
 		// waiting event cahn for each events
 		event := <-e.channel.Chan
+		log.Printf("consumed '%s' %s does %s", event.EventType(), event.Name(), event.Happened())
 		switch event.EventType() {
 		case events.MetricsUpdate:
 		case events.StorageUpdate:
