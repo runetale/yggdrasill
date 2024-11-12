@@ -2,7 +2,6 @@ package events
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -46,7 +45,7 @@ func NewStateUpdateEvent(sys, prom, his string, savePath string) DisplayEvent {
 
 func (e *StateUpdateEvent) Display() string {
 	data := ""
-	if e.savePath != "'" {
+	if e.savePath != "" {
 		data = fmt.Sprintf(
 			"[SYSTEM PROMPT]\n\n%s\n\n[PROMPT]\n\n%s\n\n[CHAT]\n\n%s",
 			e.systemPrompt,
@@ -56,10 +55,10 @@ func (e *StateUpdateEvent) Display() string {
 
 		err := os.WriteFile(e.savePath, []byte(data), 0644)
 		if err != nil {
-			log.Printf("Error writing to %s: %v", e.savePath, err)
+			return fmt.Sprintf("Error writing to %s: %v", e.savePath, err)
 		}
 	}
-	return data
+	return "updated state"
 }
 
 type InvalidResponseEvent struct {

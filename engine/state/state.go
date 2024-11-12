@@ -15,12 +15,11 @@ import (
 )
 
 type State struct {
-	task      *task.Task
-	storages  map[string]*storage.Storage
-	variables map[string]string // pre-define variables
-	// 各Namespaceを持った構造体
-	namespaces []*namespace.Namespace
-	history    []*Execution // execed histories
+	task       *task.Task
+	storages   map[string]*storage.Storage
+	variables  map[string]string      // pre-define variables
+	namespaces []*namespace.Namespace // user defined each namespaces
+	history    []*Execution           // execed histories
 
 	// sent to engine.consumeEvent
 	sender *events.Channel

@@ -3,6 +3,7 @@ package task
 
 import (
 	"bufio"
+	_ "embed"
 	"errors"
 	"fmt"
 	"log"
@@ -14,6 +15,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+//go:embed guidance.prompt
+var guidancePrompt string
+
 type Task struct {
 	name         string         `yaml:"-"`
 	folder       string         `yaml:"-"`
@@ -21,7 +25,7 @@ type Task struct {
 	Using        []*string      `yaml:"using"`
 	SystemPrompt *string        `yaml:"system_prompt"`
 	Prompt       *string        `yaml:"prompt"`
-	Guidance     []*string      `yaml:"guidance"`
+	Guidance     []string       `yaml:"-"`
 	Functions    []*Function    `yaml:"functions"`
 }
 
@@ -125,8 +129,16 @@ func (t *Task) GetMaxHistory() uint {
 	return 50
 }
 
-func (t *Task) GetGuidance() []*string {
-	return t.Guidance
+func (t *Task) GetGuidance() []string {
+	var formattedGuidance []string
+	lines := strings.Split(guidancePrompt, "\n")
+	for _, line := range lines {
+		trimmedLine := strings.TrimSpace(line)
+		if trimmedLine != "" {
+			formattedGuidance = append(formattedGuidance, fmt.Sprintf("- %s", trimmedLine))
+		}
+	}
+	return formattedGuidance
 }
 
 // user defined yaml tasks
