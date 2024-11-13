@@ -3,9 +3,9 @@ package shell
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"fmt"
 	"log"
-	"os"
 	"os/exec"
 	"time"
 
@@ -13,6 +13,12 @@ import (
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
+
+//go:embed shell.prompt
+var shellPrompt string
+
+//go:embed ns.prompt
+var nsPrompt string
 
 type Shell struct {
 }
@@ -26,9 +32,7 @@ func (s *Shell) Name() string {
 }
 
 func (s *Shell) Description() string {
-	filepath := "shell.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return shellPrompt
 }
 
 func (s *Shell) Run(storage *storage.Storage, attributes map[string]string, payload string) string {
@@ -87,7 +91,5 @@ func (s *Shell) GetNamespace() types.NamespaceType {
 }
 
 func (s *Shell) NamespaceDescription() string {
-	filepath := "ns.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return nsPrompt
 }

@@ -122,6 +122,9 @@ func parseAction(ac action.Action) string {
 	return xml.String()
 }
 
+// こいつをfixする
+// このような形になる
+// * Current goal: find the process consuming more ram
 func paraseStorage(s *storage.Storage) string {
 	if s.IsEmpty() {
 		return ""

@@ -1,6 +1,7 @@
 package tasklet
 
 import (
+	_ "embed"
 	"os"
 	"time"
 
@@ -8,6 +9,9 @@ import (
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
+
+//go:embed ns.prompt
+var nsPrompt string
 
 type Tasklet struct {
 	name             string
@@ -79,7 +83,5 @@ func (s *Tasklet) GetNamespace() types.NamespaceType {
 }
 
 func (s *Tasklet) NamespaceDescription() string {
-	filepath := "ns.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return nsPrompt
 }
