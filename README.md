@@ -11,7 +11,7 @@
     <img src="assets/logo.png" alt="yggdrasill" width="300" height="300" align='center'/>
 </p>
 
-**Notch is an Automaton tool that executes defined tasks or tasks customized and created by the user through LLM.**
+**Yggdrasill is an Automaton tool that executes defined tasks or tasks customized and created by the user through LLM.**
 It automatically updates prompts in response to actions.
 They are computed from inferences consisting of multiple previous actions.
 - Automated problem resolve
@@ -19,7 +19,7 @@ They are computed from inferences consisting of multiple previous actions.
 - Works any LLM
 
 **Runetale can be used to scale this Automaton more securely.**
-- Communication between Notch engine
+- Communication between Yggdrasill engine
 - Secure user defined task remote auto-execution using Runetale
 
 ## LLM Support
@@ -28,5 +28,5 @@ They are computed from inferences consisting of multiple previous actions.
 
 ## Future
 - [ ] Support Rag Model
-- [ ] Create a system that allows you to Serving Notch
+- [ ] Create a system that allows you to Serving Yggdrasill
 - [ ] Native Intergation with Runetale

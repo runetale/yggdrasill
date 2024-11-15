@@ -38,7 +38,7 @@
           meta = with pkgs.lib; {
             description = "yggdrasill project";
             license = licenses.mit;
-            maintainers = with maintainers; [ "shinta@gx14ac.com" ];
+            maintainers = with maintainers; [ "shinta@runetale.com" ];
           };
         };
       };
@@ -46,6 +46,7 @@
         buildInputs = with pkgs;
           [
             go
+            git
           ];
       };
       defaultPackage = self.packages.${system}.yggdrasill;

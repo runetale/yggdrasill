@@ -30,7 +30,7 @@ func run(args []string) error {
 		ShortHelp:  "",
 		LongHelp:   "",
 		Subcommands: []*ffcli.Command{
-			yggdrasill.NotchCmd,
+			yggdrasill.YggCmd,
 		},
 		FlagSet: fs,
 		Exec:    func(context.Context, []string) error { return flag.ErrHelp },
