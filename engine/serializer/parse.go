@@ -122,6 +122,7 @@ func parseAction(ac action.Action) string {
 	return xml.String()
 }
 
+// todo:
 // こいつをfixする
 // このような形になる
 // * Current goal: find the process consuming more ram
@@ -171,10 +172,10 @@ func paraseStorage(s *storage.Storage) string {
 		result = xml.String()
 
 	case types.CURRENTPREVIOUS:
-		current, currentFound := s.GetEntry("CURRENT_TAG")
+		current, currentFound := s.GetEntry(storage.CURRENT_TAG)
 		if currentFound {
 			result = fmt.Sprintf("* Current %s: %s", s.GetName(), strings.TrimSpace(current.Data))
-			prev, prevFound := s.GetEntry("PREVIOUS_TAG")
+			prev, prevFound := s.GetEntry(storage.PREVIOUS_TAG)
 			if prevFound {
 				result += fmt.Sprintf("\n* Previous %s: %s", s.GetName(), strings.TrimSpace(prev.Data))
 			}

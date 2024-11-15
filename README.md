@@ -1,8 +1,8 @@
 <p align="center">
   <small>Join the project community on our server!</small>
   <br/><br/>
-  <a href="https://discord.gg/tpAz2MTA" target="_blank" title="Join our community!">
-    <img src="https://dcbadge.limes.pink/api/server/https://discord.gg/tpAz2MTA"/>
+  <a href="https://discord.gg/gmjJUwtH7D" target="_blank" title="Join our community!">
+    <img src="https://dcbadge.limes.pink/api/server/https://discord.gg/gmjJUwtH7D"/>
   </a>
 </p>
 <hr/>
@@ -30,3 +30,5 @@ They are computed from inferences consisting of multiple previous actions.
 - [ ] Support Rag Model
 - [ ] Create a system that allows you to Serving Notch
 - [ ] Native Intergation with Runetale
+
+<iframe src="https://discord.com/widget?id=1302859579318861824&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
