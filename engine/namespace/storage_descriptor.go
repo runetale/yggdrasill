@@ -1,6 +1,6 @@
 package namespace
 
-import "github.com/runetale/notch/types"
+import "github.com/runetale/yggdrasill/types"
 
 type StorageDescriptor struct {
 	name        string

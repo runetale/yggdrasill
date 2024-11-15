@@ -4,8 +4,8 @@ package llm
 import (
 	"errors"
 
-	"github.com/runetale/notch/engine/chat"
-	"github.com/runetale/notch/engine/namespace"
+	"github.com/runetale/yggdrasill/engine/chat"
+	"github.com/runetale/yggdrasill/engine/namespace"
 )
 
 type LLMClientImpl interface {

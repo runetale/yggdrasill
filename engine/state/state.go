@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/runetale/notch/engine/action"
-	"github.com/runetale/notch/engine/chat"
-	"github.com/runetale/notch/engine/namespace"
-	"github.com/runetale/notch/events"
-	"github.com/runetale/notch/storage"
-	"github.com/runetale/notch/task"
-	"github.com/runetale/notch/types"
+	"github.com/runetale/yggdrasill/engine/action"
+	"github.com/runetale/yggdrasill/engine/chat"
+	"github.com/runetale/yggdrasill/engine/namespace"
+	"github.com/runetale/yggdrasill/events"
+	"github.com/runetale/yggdrasill/storage"
+	"github.com/runetale/yggdrasill/task"
+	"github.com/runetale/yggdrasill/types"
 )
 
 type State struct {

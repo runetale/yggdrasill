@@ -4,9 +4,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/runetale/notch/engine/chat"
-	"github.com/runetale/notch/storage"
-	"github.com/runetale/notch/types"
+	"github.com/runetale/yggdrasill/engine/chat"
+	"github.com/runetale/yggdrasill/storage"
+	"github.com/runetale/yggdrasill/types"
 )
 
 func Test_SerializeInvocation(t *testing.T) {

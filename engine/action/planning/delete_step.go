@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/runetale/notch/engine/action"
-	"github.com/runetale/notch/storage"
-	"github.com/runetale/notch/types"
+	"github.com/runetale/yggdrasill/engine/action"
+	"github.com/runetale/yggdrasill/storage"
+	"github.com/runetale/yggdrasill/types"
 )
 
 //go:embed delete.prompt

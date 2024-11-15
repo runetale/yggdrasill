@@ -1,5 +1,5 @@
 {
-  description = "notch";
+  description = "yggdrasill";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -20,23 +20,23 @@
       in
     {
       packages = {
-        notch = pkgs.buildGoModule {
-          pname = "notch";
+        yggdrasill = pkgs.buildGoModule {
+          pname = "yggdrasill";
           inherit version;
           src = self;
           buildPhase = ''
             export GOFLAGS="-mod=mod"
             export GOPROXY=https://proxy.golang.org,direct
-            go build -o notch cli/cli.go
+            go build -o yggdrasill cli/cli.go
           '';
           installPhase = ''
             mkdir -p $out/bin
-            cp notch $out/bin/
+            cp yggdrasill $out/bin/
           '';
           allowGoReference = true;
-          vendorHash = "sha256-Gw+9NMT5r1mMl9KHxKdVlv2sPTeJNImcHXU6eU/mERE=";
+          vendorHash = "sha256-9smmluvWI6CvcT0pzXLaJDe88sN8yB/DjRiUxWC1bAA=";
           meta = with pkgs.lib; {
-            description = "notch project";
+            description = "yggdrasill project";
             license = licenses.mit;
             maintainers = with maintainers; [ "shinta@gx14ac.com" ];
           };
@@ -48,6 +48,6 @@
             go
           ];
       };
-      defaultPackage = self.packages.${system}.notch;
+      defaultPackage = self.packages.${system}.yggdrasill;
     });
 }

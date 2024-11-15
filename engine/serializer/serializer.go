@@ -10,10 +10,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/runetale/notch/engine/action"
-	"github.com/runetale/notch/engine/chat"
-	"github.com/runetale/notch/engine/state"
-	"github.com/runetale/notch/storage"
+	"github.com/runetale/yggdrasill/engine/action"
+	"github.com/runetale/yggdrasill/engine/chat"
+	"github.com/runetale/yggdrasill/engine/state"
+	"github.com/runetale/yggdrasill/storage"
 )
 
 //go:embed actions.prompt

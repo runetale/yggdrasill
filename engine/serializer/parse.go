@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/runetale/notch/engine/action"
-	"github.com/runetale/notch/engine/chat"
-	"github.com/runetale/notch/storage"
-	"github.com/runetale/notch/types"
+	"github.com/runetale/yggdrasill/engine/action"
+	"github.com/runetale/yggdrasill/engine/chat"
+	"github.com/runetale/yggdrasill/storage"
+	"github.com/runetale/yggdrasill/types"
 )
 
 type Parsed struct {

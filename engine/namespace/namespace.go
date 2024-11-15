@@ -1,14 +1,14 @@
 package namespace
 
 import (
-	"github.com/runetale/notch/engine/action"
-	"github.com/runetale/notch/engine/action/goal"
-	"github.com/runetale/notch/engine/action/memory"
-	"github.com/runetale/notch/engine/action/planning"
-	"github.com/runetale/notch/engine/action/shell"
-	"github.com/runetale/notch/engine/action/tasklet"
-	"github.com/runetale/notch/task"
-	"github.com/runetale/notch/types"
+	"github.com/runetale/yggdrasill/engine/action"
+	"github.com/runetale/yggdrasill/engine/action/goal"
+	"github.com/runetale/yggdrasill/engine/action/memory"
+	"github.com/runetale/yggdrasill/engine/action/planning"
+	"github.com/runetale/yggdrasill/engine/action/shell"
+	"github.com/runetale/yggdrasill/engine/action/tasklet"
+	"github.com/runetale/yggdrasill/task"
+	"github.com/runetale/yggdrasill/types"
 )
 
 // managed all namespace actions

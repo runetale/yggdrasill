@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/runetale/notch/events"
-	"github.com/runetale/notch/types"
+	"github.com/runetale/yggdrasill/events"
+	"github.com/runetale/yggdrasill/types"
 )
 
 type Entry struct {

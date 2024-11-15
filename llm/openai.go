@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/runetale/notch/engine/chat"
-	"github.com/runetale/notch/engine/namespace"
+	"github.com/runetale/yggdrasill/engine/chat"
+	"github.com/runetale/yggdrasill/engine/namespace"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -270,6 +270,6 @@ func (o *OpenAIClient) CheckNatvieToolSupport() bool {
 		}
 	}
 
-	log.Println("using original notch system prompt")
+	log.Println("using original yggdrasill system prompt")
 	return false
 }
