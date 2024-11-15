@@ -27,6 +27,7 @@
           buildPhase = ''
             export GOPROXY=direct
             export GOSUMDB=off
+            export GO111MODULE=on
             go build -o yggdrasill cli/cli.go
           '';
           installPhase = ''
@@ -34,7 +35,7 @@
             cp yggdrasill $out/bin/
           '';
           allowGoReference = true;
-          vendorHash = "";
+          vendorHash = "sha256-WZqZhepSkelRy6FY47xYo7hce1vBexb2HS4MbKgJSZ4=";
           meta = with pkgs.lib; {
             description = "yggdrasill project";
             license = licenses.mit;
@@ -46,7 +47,6 @@
         buildInputs = with pkgs;
           [
             go
-            git
           ];
       };
       defaultPackage = self.packages.${system}.yggdrasill;

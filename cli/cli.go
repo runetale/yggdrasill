@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/peterbourgon/ff/v2/ffcli"
-	"github.com/runetale/yggdrasill/cli/yggdrasill"
+	"github.com/runetale/yggdrasill/cli/ygg"
 )
 
 func main() {
@@ -30,7 +30,7 @@ func run(args []string) error {
 		ShortHelp:  "",
 		LongHelp:   "",
 		Subcommands: []*ffcli.Command{
-			yggdrasill.YggCmd,
+			ygg.YggCmd,
 		},
 		FlagSet: fs,
 		Exec:    func(context.Context, []string) error { return flag.ErrHelp },
