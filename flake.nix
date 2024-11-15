@@ -25,8 +25,8 @@
           inherit version;
           src = self;
           buildPhase = ''
-            export GOFLAGS="-mod=mod"
-            export GOPROXY=https://proxy.golang.org,direct
+            export GOPROXY=direct
+            export GOSUMDB=off
             go build -o yggdrasill cli/cli.go
           '';
           installPhase = ''
@@ -34,7 +34,7 @@
             cp yggdrasill $out/bin/
           '';
           allowGoReference = true;
-          vendorHash = "sha256-9smmluvWI6CvcT0pzXLaJDe88sN8yB/DjRiUxWC1bAA=";
+          vendorHash = "";
           meta = with pkgs.lib; {
             description = "yggdrasill project";
             license = licenses.mit;
