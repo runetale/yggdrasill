@@ -1,13 +1,19 @@
 package memory
 
 import (
-	"os"
+	_ "embed"
 	"time"
 
 	"github.com/runetale/notch/engine/action"
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
+
+//go:embed delete.prompt
+var deletePrompt string
+
+//go:embed ns.prompt
+var nsPrompt string
 
 type DeleteMemory struct {
 }
@@ -21,9 +27,7 @@ func (m *DeleteMemory) Name() string {
 }
 
 func (m *DeleteMemory) Description() string {
-	filepath := "delete.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return deletePrompt
 }
 
 func (m *DeleteMemory) Run(storage *storage.Storage, attributes map[string]string, payload string) string {
@@ -60,7 +64,5 @@ func (m *DeleteMemory) GetNamespace() types.NamespaceType {
 }
 
 func (m *DeleteMemory) NamespaceDescription() string {
-	filepath := "ns.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return nsPrompt
 }

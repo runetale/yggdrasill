@@ -1,13 +1,16 @@
 package planning
 
 import (
-	"os"
+	_ "embed"
 	"time"
 
 	"github.com/runetale/notch/engine/action"
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
+
+//go:embed clear.prompt
+var clearPrompt string
 
 type Clear struct {
 }
@@ -21,9 +24,7 @@ func (a *Clear) Name() string {
 }
 
 func (a *Clear) Description() string {
-	filepath := "clear.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return clearPrompt
 }
 
 func (a *Clear) Run(storage *storage.Storage, attributes map[string]string, payload string) string {
@@ -56,7 +57,5 @@ func (a *Clear) GetNamespace() types.NamespaceType {
 }
 
 func (a *Clear) NamespaceDescription() string {
-	filepath := "ns.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return nsPrompt
 }

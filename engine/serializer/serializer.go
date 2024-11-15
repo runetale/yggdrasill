@@ -5,6 +5,7 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"html"
 	"html/template"
 	"sort"
 	"strings"
@@ -57,11 +58,7 @@ func DisplaySystemPrompt(state *state.State) (string, error) {
 	displayStorages := strings.Join(serializedStorage, "\n\n")
 
 	// guidance
-	var formattedGuidance []string
-	for _, s := range task.GetGuidance() {
-		formattedGuidance = append(formattedGuidance, fmt.Sprintf("- %s", *s))
-	}
-	guidance := strings.Join(formattedGuidance, "\n")
+	guidance := strings.Join(task.GetGuidance(), "\n")
 
 	// available actions
 	actions, err := actionsForState(state)
@@ -96,16 +93,22 @@ func serializeAction(ac action.Action) string {
 	var builder strings.Builder
 
 	// create xml tag
-	builder.WriteString(fmt.Sprintf("<%s", ac.Name()))
+	builder.WriteString(fmt.Sprintf("<%s", html.EscapeString(ac.Name())))
 
 	// if existing attributes by aciton
 	for name, exampleValue := range ac.ExampleAttributes() {
-		builder.WriteString(fmt.Sprintf(` %s="%s"`, name, exampleValue))
+		escapedName := html.EscapeString(name)
+		escapedValue := html.EscapeString(exampleValue)
+		builder.WriteString(fmt.Sprintf(` %s="%s"`, escapedName, escapedValue))
 	}
 
 	// if existing payload by aciton
 	if payload := ac.ExamplePayload(); payload != nil {
-		builder.WriteString(fmt.Sprintf(">%s</%s>", *payload, ac.Name()))
+		builder.WriteString(fmt.Sprintf(
+			">%s</%s>",
+			html.EscapeString(*payload),
+			html.EscapeString(ac.Name()),
+		))
 	} else {
 		builder.WriteString("/>")
 	}
@@ -118,7 +121,6 @@ func actionsForState(state *state.State) (string, error) {
 
 	for _, group := range state.GetNamespaces() {
 		builder.WriteString(fmt.Sprintf("## %s\n\n", group.Name()))
-
 		if group.Description() != "" {
 			builder.WriteString(fmt.Sprintf("%s\n\n", group.Description()))
 		}

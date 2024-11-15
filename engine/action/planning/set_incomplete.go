@@ -1,8 +1,8 @@
 package planning
 
 import (
+	_ "embed"
 	"fmt"
-	"os"
 	"strconv"
 	"time"
 
@@ -10,6 +10,9 @@ import (
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
+
+//go:embed set-incomplete.prompt
+var setInCompletePrompt string
 
 type SetInComplete struct {
 }
@@ -23,9 +26,7 @@ func (s *SetInComplete) Name() string {
 }
 
 func (s *SetInComplete) Description() string {
-	filepath := "set-incomplete.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return setInCompletePrompt
 }
 
 func (s *SetInComplete) Run(storage *storage.Storage, attributes map[string]string, payload string) string {
@@ -62,7 +63,5 @@ func (s *SetInComplete) GetNamespace() types.NamespaceType {
 }
 
 func (s *SetInComplete) NamespaceDescription() string {
-	filepath := "ns.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return nsPrompt
 }

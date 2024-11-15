@@ -1,7 +1,7 @@
 package planning
 
 import (
-	"os"
+	_ "embed"
 	"strconv"
 	"time"
 
@@ -9,6 +9,9 @@ import (
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
+
+//go:embed delete.prompt
+var deletePrompt string
 
 type DeleteStep struct {
 }
@@ -22,9 +25,7 @@ func (a *DeleteStep) Name() string {
 }
 
 func (a *DeleteStep) Description() string {
-	filepath := "delete.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return deletePrompt
 }
 
 func (a *DeleteStep) Run(storage *storage.Storage, attributes map[string]string, payload string) string {
@@ -59,7 +60,5 @@ func (a *DeleteStep) GetNamespace() types.NamespaceType {
 }
 
 func (a *DeleteStep) NamespaceDescription() string {
-	filepath := "ns.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return nsPrompt
 }

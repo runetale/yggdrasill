@@ -1,13 +1,19 @@
 package goal
 
 import (
-	"os"
+	_ "embed"
 	"time"
 
 	"github.com/runetale/notch/engine/action"
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
+
+//go:embed update.prompt
+var updatePrompt string
+
+//go:embed ns.prompt
+var nsPrompt string
 
 type Goal struct {
 }
@@ -21,9 +27,7 @@ func (d *Goal) Name() string {
 }
 
 func (d *Goal) Description() string {
-	filepath := "update.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return updatePrompt
 }
 
 func (d *Goal) Run(storage *storage.Storage, attributes map[string]string, payload string) string {
@@ -57,7 +61,5 @@ func (d *Goal) GetNamespace() types.NamespaceType {
 }
 
 func (d *Goal) NamespaceDescription() string {
-	filepath := "ns.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return nsPrompt
 }

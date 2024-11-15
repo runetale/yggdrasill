@@ -1,13 +1,16 @@
 package memory
 
 import (
-	"os"
+	_ "embed"
 	"time"
 
 	"github.com/runetale/notch/engine/action"
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
+
+//go:embed save.prompt
+var savePrompt string
 
 type SaveMemory struct {
 }
@@ -21,9 +24,7 @@ func (m *SaveMemory) Name() string {
 }
 
 func (m *SaveMemory) Description() string {
-	filepath := "save.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return savePrompt
 }
 
 func (m *SaveMemory) Run(storage *storage.Storage, attributes map[string]string, payload string) string {
@@ -60,7 +61,5 @@ func (m *SaveMemory) RequiresUserConfirmation() bool {
 }
 
 func (m *SaveMemory) NamespaceDescription() string {
-	filepath := "ns.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return nsPrompt
 }

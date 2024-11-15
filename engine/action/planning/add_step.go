@@ -1,13 +1,19 @@
 package planning
 
 import (
-	"os"
+	_ "embed"
 	"time"
 
 	"github.com/runetale/notch/engine/action"
 	"github.com/runetale/notch/storage"
 	"github.com/runetale/notch/types"
 )
+
+//go:embed add.prompt
+var addPrompt string
+
+//go:embed ns.prompt
+var nsPrompt string
 
 type AddStep struct {
 }
@@ -21,9 +27,7 @@ func (a *AddStep) Name() string {
 }
 
 func (a *AddStep) Description() string {
-	filepath := "add.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return addPrompt
 }
 
 func (a *AddStep) Run(storage *storage.Storage, attributes map[string]string, payload string) string {
@@ -57,7 +61,5 @@ func (a *AddStep) GetNamespace() types.NamespaceType {
 }
 
 func (a *AddStep) NamespaceDescription() string {
-	filepath := "ns.prompt"
-	data, _ := os.ReadFile(filepath)
-	return string(data)
+	return nsPrompt
 }

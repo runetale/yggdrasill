@@ -15,12 +15,11 @@ import (
 )
 
 type State struct {
-	task      *task.Task
-	storages  map[string]*storage.Storage
-	variables map[string]string // pre-define variables
-	// 各Namespaceを持った構造体
-	namespaces []*namespace.Namespace
-	history    []*Execution // execed histories
+	task       *task.Task
+	storages   map[string]*storage.Storage
+	variables  map[string]string      // pre-define variables
+	namespaces []*namespace.Namespace // user defined each namespaces
+	history    []*Execution           // execed histories
 
 	// sent to engine.consumeEvent
 	sender *events.Channel
@@ -99,7 +98,9 @@ func NewState(
 
 	// set callback function
 	onEventCallback := func(event events.DisplayEvent) {
-		s.sender.Chan <- event
+		go func() {
+			s.sender.Chan <- event
+		}()
 	}
 	s.onEventCallback = onEventCallback
 
@@ -122,6 +123,13 @@ func NewState(
 		}
 	}
 
+	// new state
+	s.task = task
+	s.namespaces = namespaces
+	s.variables = variables
+	s.history = history
+	s.storages = storages
+
 	// if the goal namespace is enabled, set the current goal
 	for key, s := range storages {
 		if key == "goal" {
@@ -131,14 +139,8 @@ func NewState(
 		}
 	}
 
+	// set metrics
 	metrics := NewMetrics(uint(maxIterations))
-
-	s.task = task
-	s.storages = storages
-	s.namespaces = namespaces
-	s.variables = variables
-	s.history = history
-	s.sender = sender
 	s.metrics = metrics
 
 	return s

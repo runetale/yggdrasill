@@ -25,12 +25,12 @@ type Engine struct {
 	task       *task.Task
 	timeout    *time.Duration
 	nativeTool bool
-	saveTo     *string
+	saveTo     string
 
 	waitCh chan struct{}
 }
 
-func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool bool, saveTo *string) *Engine {
+func NewEngine(t *task.Task, c *llm.LLMFactory, maxIterations uint, nativeTool bool, saveTo string) *Engine {
 	channel := events.NewChannel()
 
 	serializationInvocationCb := func(inv *chat.Invocation) *string {
@@ -230,11 +230,11 @@ func (e *Engine) OnUpdateState(options *chat.ChatOption, refresh bool) {
 		history := e.state.ToChatHistory(int(e.maxHistory))
 		options.UpdateHistroy(history)
 	}
-	stringsList := make([]string, len(options.GetHistory()))
+	histories := make([]string, len(options.GetHistory()))
 	for i, h := range options.GetHistory() {
-		stringsList[i] = h.Display()
+		histories[i] = h.Display()
 	}
-	e.state.OnEvent(events.NewStateUpdateEvent(options.GetSystemPrompt(), options.GetPrompt(), strings.Join(stringsList, "\n"), e.saveTo))
+	e.state.OnEvent(events.NewStateUpdateEvent(options.GetSystemPrompt(), options.GetPrompt(), strings.Join(histories, "\n"), e.saveTo))
 }
 
 func (e *Engine) onEmptyResponse() {
@@ -273,11 +273,13 @@ func (e *Engine) onTimeoutAction(inv *chat.Invocation, start time.Duration) {
 func (e *Engine) onExecutedErrorAction(inv *chat.Invocation, err *string, start time.Duration) {
 	e.state.IncrementErroredActionMetrics()
 	e.state.AddErrorToHistory(inv, err)
-	e.state.OnEvent(events.NewActionExecutedEvent(inv.Action, err, nil, start))
+	in := serializer.SerializeInvocation(inv)
+	e.state.OnEvent(events.NewActionExecutedEvent(*in, err, nil, start))
 }
 
 func (e *Engine) onExecutedSuccessAction(inv *chat.Invocation, result *string, start time.Duration) {
 	e.state.IncrementSuccessActionMetrics()
 	e.state.AddSuccessToHistory(inv, result)
-	e.state.OnEvent(events.NewActionExecutedEvent(inv.Action, nil, result, start))
+	in := serializer.SerializeInvocation(inv)
+	e.state.OnEvent(events.NewActionExecutedEvent(*in, nil, result, start))
 }

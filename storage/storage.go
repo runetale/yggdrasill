@@ -176,7 +176,6 @@ func (s *Storage) SetInComplete(pos int) bool {
 }
 
 func (s *Storage) SetCurrent(data string) {
-	s.entry[CURRENT_TAG] = NewEntry(data)
 	if s.storageType != types.CURRENTPREVIOUS {
 		panic("storage type must be CurrentPrevious")
 	}
