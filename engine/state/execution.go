@@ -1,7 +1,7 @@
 // history of executed by engine
 package state
 
-import "github.com/runetale/notch/engine/chat"
+import "github.com/runetale/yggdrasill/engine/chat"
 
 type Execution struct {
 	// llm response

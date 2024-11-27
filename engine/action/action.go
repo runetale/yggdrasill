@@ -3,8 +3,8 @@ package action
 import (
 	"time"
 
-	"github.com/runetale/notch/storage"
-	"github.com/runetale/notch/types"
+	"github.com/runetale/yggdrasill/storage"
+	"github.com/runetale/yggdrasill/types"
 )
 
 // all namespace's implement this interfaces

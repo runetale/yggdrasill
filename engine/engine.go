@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/runetale/notch/engine/action"
-	"github.com/runetale/notch/engine/chat"
-	"github.com/runetale/notch/engine/serializer"
-	"github.com/runetale/notch/engine/state"
-	"github.com/runetale/notch/events"
-	"github.com/runetale/notch/llm"
-	"github.com/runetale/notch/task"
+	"github.com/runetale/yggdrasill/engine/action"
+	"github.com/runetale/yggdrasill/engine/chat"
+	"github.com/runetale/yggdrasill/engine/serializer"
+	"github.com/runetale/yggdrasill/engine/state"
+	"github.com/runetale/yggdrasill/events"
+	"github.com/runetale/yggdrasill/llm"
+	"github.com/runetale/yggdrasill/task"
 )
 
 type Engine struct {

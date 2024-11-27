@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/runetale/notch/types"
+	"github.com/runetale/yggdrasill/types"
 )
 
 type EventType string

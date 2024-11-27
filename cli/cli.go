@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/peterbourgon/ff/v2/ffcli"
-	"github.com/runetale/notch/cli/notch"
+	"github.com/runetale/yggdrasill/cli/ygg"
 )
 
 func main() {
@@ -23,14 +23,14 @@ func run(args []string) error {
 		args = []string{"version"}
 	}
 
-	fs := flag.NewFlagSet("notch", flag.ExitOnError)
+	fs := flag.NewFlagSet("yggdrasill", flag.ExitOnError)
 	cmd := &ffcli.Command{
-		Name:       "notch",
-		ShortUsage: "notch <subcommands> [command flags]",
+		Name:       "yggdrasill",
+		ShortUsage: "yggdrasill <subcommands> [command flags]",
 		ShortHelp:  "",
 		LongHelp:   "",
 		Subcommands: []*ffcli.Command{
-			notch.NotchCmd,
+			ygg.YggCmd,
 		},
 		FlagSet: fs,
 		Exec:    func(context.Context, []string) error { return flag.ErrHelp },

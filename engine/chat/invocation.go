@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/runetale/notch/engine/action"
+	"github.com/runetale/yggdrasill/engine/action"
 )
 
 type Invocation struct {
