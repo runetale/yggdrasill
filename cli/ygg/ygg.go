@@ -16,7 +16,7 @@ import (
 
 const version = "0.0.1"
 
-var notchArgs struct {
+var yggArgs struct {
 	taskpath      string
 	prompt        string
 	generator     string
@@ -37,18 +37,18 @@ const (
 var YggCmd = &ffcli.Command{
 	Name:       "up",
 	ShortUsage: "up [flags]",
-	ShortHelp:  "command to start notch",
+	ShortHelp:  "command to start ygg",
 	FlagSet: (func() *flag.FlagSet {
 		fs := flag.NewFlagSet("up", flag.ExitOnError)
-		fs.StringVar(&notchArgs.taskpath, "T", "", "execute template file paths")
-		fs.StringVar(&notchArgs.prompt, "P", "", "specify prompt, if not provided by task")
-		fs.StringVar(&notchArgs.generator, "G", "openai://gpt-4@localhost:12321", "generator string, {provider}://{model}@{host}:{port}")
-		fs.IntVar(&notchArgs.contextWindow, "context-window", 8000, "")
-		fs.StringVar(&notchArgs.apiKey, "key", "", "api key by provider models")
-		fs.IntVar(&notchArgs.maxIterations, "max-iterations", 0, "max number of automaton to complete task, 0 is the no limit")
-		fs.StringVar(&notchArgs.strategy, "S", string(XML), "if a supported format is specified, that format is used")
-		fs.BoolVar(&notchArgs.forceFormat, "F", false, "use the fomat specified in serialisation, even if native tools are supported")
-		fs.StringVar(&notchArgs.saveTo, "save", "", "at each step, the current system prompts and status data are stored in this file")
+		fs.StringVar(&yggArgs.taskpath, "T", "", "execute template file paths")
+		fs.StringVar(&yggArgs.prompt, "P", "", "specify prompt, if not provided by task")
+		fs.StringVar(&yggArgs.generator, "G", "openai://gpt-4@localhost:12321", "generator string, {provider}://{model}@{host}:{port}")
+		fs.IntVar(&yggArgs.contextWindow, "context-window", 8000, "")
+		fs.StringVar(&yggArgs.apiKey, "key", "", "api key by provider models")
+		fs.IntVar(&yggArgs.maxIterations, "max-iterations", 0, "max number of automaton to complete task, 0 is the no limit")
+		fs.StringVar(&yggArgs.strategy, "S", string(XML), "if a supported format is specified, that format is used")
+		fs.BoolVar(&yggArgs.forceFormat, "F", false, "use the fomat specified in serialisation, even if native tools are supported")
+		fs.StringVar(&yggArgs.saveTo, "save", "", "at each step, the current system prompts and status data are stored in this file")
 		return fs
 	})(),
 	Exec: exec,
@@ -56,12 +56,12 @@ var YggCmd = &ffcli.Command{
 
 func exec(ctx context.Context, args []string) error {
 	// setup llm
-	options, err := llm.NewLLMOptions(notchArgs.generator, uint32(notchArgs.contextWindow))
+	options, err := llm.NewLLMOptions(yggArgs.generator, uint32(yggArgs.contextWindow))
 	if err != nil {
 		return err
 	}
 
-	factory, err := llm.NewLLMFactory(options, notchArgs.apiKey)
+	factory, err := llm.NewLLMFactory(options, yggArgs.apiKey)
 	if err != nil {
 		return err
 	}
@@ -69,20 +69,20 @@ func exec(ctx context.Context, args []string) error {
 	// TODO: add embedder for RAG
 
 	// setup task
-	tasklet, err := task.GetFromPath(notchArgs.taskpath)
+	tasklet, err := task.GetFromPath(yggArgs.taskpath)
 	if err != nil {
 		return err
 	}
 
-	err = tasklet.Setup(&notchArgs.prompt)
+	err = tasklet.Setup(&yggArgs.prompt)
 	if err != nil {
 		panic(err)
 	}
 
-	log.Printf("notch v%s > 🧬 %s %s", version, notchArgs.generator, tasklet.GetName())
+	log.Printf("ygg v%s > 🧬 %s %s", version, yggArgs.generator, tasklet.GetName())
 
-	_, nativeTool := strategyDesicion(StrategyFormat(notchArgs.strategy), notchArgs.forceFormat, factory)
-	e := engine.NewEngine(tasklet, factory, uint(notchArgs.maxIterations), nativeTool, notchArgs.saveTo)
+	_, nativeTool := strategyDesicion(StrategyFormat(yggArgs.strategy), yggArgs.forceFormat, factory)
+	e := engine.NewEngine(tasklet, factory, uint(yggArgs.maxIterations), nativeTool, yggArgs.saveTo)
 
 	// start
 	go e.Start()
@@ -98,7 +98,7 @@ func exec(ctx context.Context, args []string) error {
 				e.Stop()
 			case <-e.Done():
 				ch <- struct{}{}
-				log.Printf("shutdown completed notch")
+				log.Printf("shutdown completed ygg")
 			}
 		}
 	}()
