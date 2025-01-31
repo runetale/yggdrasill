@@ -28,5 +28,4 @@ They are computed from inferences consisting of multiple previous actions.
 
 ## Future
 - [ ] Support Rag Model
-- [ ] Create a system that allows you to Serving Notch
 - [ ] Native Intergation with Runetale
